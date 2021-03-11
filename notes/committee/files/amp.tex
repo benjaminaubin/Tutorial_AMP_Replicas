@@ -1,0 +1,433 @@
+\section{Belief Propagation and Approximate Message Passing}
+\label{sec:bp_amp}
+
+The Approximate Message Passing (AMP) algorithm can be seen as Taylor expansion of the loopy Belief Propagation (BP) approach 
+\cite{mezard1987spin,mezard2009information,wainwright2008graphical},
+similar to the so-called TAP equation in spin
+glass theory \cite{thouless1977solution}. While the behavior of AMP
+can be rigorously studied
+\cite{bayati2011dynamics,javanmard2013state,bayati2015universality},
+it is useful and instructive to see how the derivation can be
+performed in the framework of BP and the cavity
+method, as was pioneered in \cite{mezard1989space} for the single
+layer problem. The derivation uses the GAMP notations of
+\cite{rangan2011generalized} and follows closely the one of \cite{zdeborova2016statistical}.
+%
+The computation is presented for the committee machine hypothesis class, which is the vectorized version of the  \aclink{GLM}, with $K\geq 1$ vectorial parameters $\mat{W} = \{\vec{w}_k\}_{k=1}^K \in\bbR^{\ndim \times K}$.
+
+\subsection{Factor graph and joint probability distribution}
+	As a central illustration, we present the instructive derivation of the \aclink{rBP} equations starting with the BP equations in the context of committee machines. We recall the Joint Probability Distribution (JPD)
+			\begin{align}
+				\rP_\ndim\(\mat{W} | \vec{y}, \mat{X}\)  &= \frac{\rP_\out(\vec{y} | \mat{Z}) \rP_\w(\mat{W}) }{\mZ_\ndim(\vec{y},\mat{X})} = \frac{\prod_{\mu=1}^\nsamples \rP_\out(y_\mu | \vec{z}_\mu) \prod_{i=1}^\ndim \rP_{\w}(\vec{w}_i)  }{\mZ_\ndim(\vec{y},\mat{X})} \,,
+			\end{align}
+			where we defined $\mat{Z} =\frac{1}{\sqrt{\ndim}} \mat{X} \mat{Z} \in \bbR^{\nsamples \times K}$ and we assume that the channel and prior distributions factorize over factors $\rP_{\out}(y_\mu | \vec{z}_\mu)$ and variables $\rP_{\w}(\vec{w}_i)$. 	
+			
+			The posterior distribution may be represented by the following bipartite factor graph in \Fig\ref{fig:amp:factor_graph_committee}.
+			\begin{figure}[htb!]
+				\centering
+			\begin{tikzpicture}[scale=0.85, auto, swap]
+			    \foreach \i in {1,...,6}
+			        \node[var] (X\i) at (1.5*\i,0) {};
+			    \node at (12, 0) {$ \vec{w}_i \in \bbR^K $};
+			
+			    \foreach \mu in {1,...,4}
+			        \node[inter] (Y\mu) at (1.5+1.5*\mu,-2) {};
+			    \foreach \i in {1,...,6}
+			        \foreach \mu in {1,...,4}
+			            \path[edge] (X\i) -- (Y\mu);
+			    \node at (10, -2) {};
+			    \node (F) at (12, -2) {$ \rP_{\out}\(y_\mu | \frac{1}{\sqrt{\ndim}} \vec{x}_\mu^\intercal \mat{W} \) $};			
+			    \foreach \i in {1,...,6} {
+			        \node[field] (P\i) at (1.5*\i,1) {};
+			        \path[edge] (X\i) -- (P\i);
+			    }
+			    \node at (12, 1) {$ \rP_\w(\vec{w}_i) $};
+			    \path[-latex, teal, very thick] (Y1) edge node[left]{$\td{m}_{\mu \to i}(\vec{w}_i)$} (X1);
+			    \path[-latex, burntorange, very thick] (X6) edge node[right]{$m_{i \to \mu}(\vec{w}_i)$} (Y4);
+			\end{tikzpicture}
+			\caption{Factor graph representation of the joint distribution for committee machines.}
+			\label{fig:amp:factor_graph_committee}
+			\end{figure}
+		In the following, we attach a set of \emph{messages} $\{m_{i\to \mu},\tilde{m}_{\mu \to i}\}_{i=1..n}^{\mu=1..m}$ to the edges of this bipartite factor graph. These messages correspond to the marginal probabilities of $\vec{w}_i \in \bbR^K$ if we remove the edges $(i \to \mu)$ or $(\mu \to i)$. 
+			We define the auxiliary variable $\vec{z}_\indsamples = \frac{1}{\sqrt{\ndim}}\vec{x}_\indsamples^\intercal \mat{W} \in \bbR^K $ which is $\Theta(1)$ thanks to the pre-factor rescaling $1/\sqrt{d}$. This scaling is crucial as it allows the BP equations to hold true even though the factor graph is not tree-like and is instead fully connected with short loops.
+				
+\subsection{Belief Propagation equations}		
+		The BP equations (also called the sum-product equations) for $\vec{w}_i=(w_{ik})_{k=1..K} \in \bbR^K$ on the factor graph \Fig\ref{fig:amp:factor_graph_committee} can be formulated as:
+			\begin{align}
+					m_{i\to \mu}^{t+1} (\vec{w}_i) &= \displaystyle \frac{1}{\mZ_{i\to \mu}} \rP_\w (\vec{w}_i) \prod\limits_{\nu \neq \mu}^\nsamples \tilde{m}_{\nu \to i}^t (\vec{w}_i) \label{appendix:amp:bp_equations_committee} \\
+					\tilde{m}_{\mu \to i}^t (\vec{w}_i) &=  \displaystyle \frac{1}{\mZ_{\mu \to i}} \int_{\bbR^K} \prod\limits_{j\neq i}^\ndim \d \vec{w}_j ~ \rP_\out \(y_{\mu} |  \frac{1}{\sqrt{\ndim}} \sum_{j=1}^\ndim  x_{\mu j}\vec{w}_{j} \)  m_{j \to \mu}^t (\vec{w}_j )\,, \nonumber
+			\end{align}
+		The BP equations assume that incoming messages are independent. Hence these equations are exact on a tree (no loop), but they remain exact if "correlations decrease fast enough / long loops". We assume in the following that the hypothesis is true in our model.\\
+										
+\subsection{Relaxed Belief Propagation equations}
+		The idea of the relaxed BP equations is to simply expand in the limit $\ndim \to \infty$ the set of $\Theta(\ndim^2)$ messages $\td{m}$ of the BP equations in \eqref{appendix:amp:bp_equations_committee} before plugging them in $m$. Truncating the expansion and keeping only terms of order $\Theta\(1/\ndim\)$, messages become \emph{Gaussian}.
+			Hence messages are therefore parametrized only by the mean $\hat{\vec{w}}_{i\to \mu}^t$ and the covariance matrix $\hat{\mat{C}}_{i\to \mu}^t$ of the marginal distribution at time $t$:
+			\begin{align}
+			\begin{aligned}
+				\hat{\vec{w}}_{i\to \mu}^t &\equiv \displaystyle \int_{\bbR^K} \d \vec{w}_i ~
+					 m_{i \to \mu}^t (\vec{w}_i) ~ \vec{w}_i \spacecase
+					 \hat{\mat{C}}_{i \to \mu}^t &\equiv \displaystyle \int_{\bbR^K} \d \vec{w}_i ~
+					 m_{i \to \mu}^t (\vec{w}_i) ~ \vec{w}_i \vec{w}_i^\intercal - \hat{\vec{w}}_{i \to \mu}^t(\hat{\vec{w}}_{i \to \mu}^t)^\intercal
+			\end{aligned}
+			\label{appendix:amp:committee:what_chat}
+			\end{align}
+		To decouple the argument of $\rP_{\out}$, we first by introducing its Fourier transform $\hat{\rP}_{\out}$ according to
+			\begin{align*}
+			&\rP_\out \(y_{\mu} |  \frac{1}{\sqrt{\ndim}} \sum_{j=1}^\ndim  x_{\mu j}\vec{w}_{j} \) = \frac{1}{(2\pi)^{K/2}}\\
+			& \qquad \qquad  \times \int_{\bbR^K} \d \bxi \exp\( i \bxi^\intercal \( \displaystyle \frac{1}{\sqrt{\ndim}} \sum_{j=1}^\ndim  x_{\mu j}\vec{w}_{j}\) \hat{\rP}_{\out}(y_{\mu} , \bxi )    \).	
+			\end{align*}
+			Injecting this representation in the BP equations, \eqref{appendix:amp:bp_equations_committee} becomes:
+			\begin{align}
+			&\tilde{m}_{\mu \to i}^t (\vec{w}_i ) = 
+			\frac{1}{(2\pi)^{K/2}\mZ_{\mu\to i} }
+			\int_{\bbR^K} \d \bxi ~ \hat{\rP}_{\out}(y_{\mu} , \bxi) ~ 
+			\exp\(i  \bxi^\intercal \frac{1}{\sqrt{\ndim}} x_{\mu i} \vec{w}_i \)\nonumber\\
+			 &\qquad \times\prod\limits_{j\neq i}^\ndim \underbrace{\int_{\bbR^K} \d \vec{w}_j ~
+					 m_{j \to \mu}^t (\vec{w}_j ) ~ \exp\( i  \bxi^\intercal \frac{1}{\sqrt{\ndim}} x_{\mu j} \vec{w}_j ) \)}_{\equiv I_j}\label{appendix:amp:bp_equations_committe:mtilde}
+			\end{align}
+			In the limit $\ndim \to \infty$ the term $I_j$ can be easily expanded and expressed using $\hat{\vec{w}}$ and $\hat{\mat{C}}$ in \eqref{appendix:amp:committee:what_chat}:
+			\begin{align*}
+			 I_j &= \int_{\bbR^K} \d \vec{w}_j ~
+					 m_{j \to \mu}^t (\vec{w}_j ) ~ \exp\( i \frac{x_{\mu j}}{\sqrt{\ndim}} \bxi^\intercal \vec{w}_j ) \) \\
+					 & \simeq  \exp\( i \frac{x_{\mu j}}{\sqrt{\ndim}} \bxi^\intercal  \hat{\vec{w}}_{j\to \mu}^t -  \frac{1}{2} \frac{x_{\mu j}^2}{\ndim}  \bxi^\intercal \hat{\mat{C}}_{j\to \mu}^t  \bxi \).
+			\end{align*} 
+			Finally using the inverse Fourier transform:
+			\begin{align*}
+			&\tilde{m}_{\mu \to i}^t (\vec{w}_i ) = 
+			\frac{1}{(2\pi)^{K/2} \mZ_{\mu \to i}}
+			\int_{\bbR^K} \d \vec{z} \rP_{\out}(y_\mu | \vec{z} ) 
+			\int_{\bbR^K} \d \bxi  
+			e^{-i \bxi^\intercal \vec{z}}
+			e^{ i x_{\mu i} \bxi^\intercal \vec{w}_i} \\
+			&\qquad\qquad\qquad\times\prod\limits_{j\neq i}^\ndim \exp\( i \frac{x_{\mu j}}{\sqrt{\ndim}} \bxi^\intercal \hat{\vec{w}}_{j\to \mu}^t -  \frac{1}{2}\frac{x_{\mu j}^2}{\ndim} \bxi^\intercal \hat{\mat{C}}_{j\to \mu}^t \bxi \) \\
+			&= \frac{1}{(2\pi)^{K} \mZ_{\mu\to i}}
+			\int_{\bbR} \d \vec{z} ~ \rP_{\out}(y_\mu | \vec{z} )\\
+			& \qquad\qquad \int_{\bbR^K} \d \bxi ~ e^{-i \bxi^\intercal \vec{z}}
+			e^{ i x_{\mu i} \bxi^\intercal \vec{w}_i} e^{i \sum\limits_{j\neq i}^\ndim\frac{x_{\mu j}}{\sqrt{\ndim}}  \bxi^\intercal \hat{\vec{w}}_{j\to \mu}^t } e^{-  \frac{1}{2} \sum\limits_{j\neq i}^\ndim\frac{x_{\mu j}^2}{\ndim}  \bxi^\intercal  \hat{\mat{C}}_{j \to \mu }^t \bxi} \\
+			&= \frac{1}{(2\pi)^K \mZ_{\mu\to i}} \int_{\bbR^K} \d \vec{z} ~ \rP_{\out}(y_\mu | \vec{z}) \\ 
+			& \qquad \quad \times \sqrt{\frac{(2\pi)^K}{\det{V_{\mu \to i}^t}}} \underbrace{e^{-\frac{1}{2} \( \vec{z} -\frac{x_{\mu i}}{\sqrt{\ndim}} \vec{w}_i -\bomega_{\mu \to i}^t \)^\intercal (\mat{V}_{\mu \to i}^t)^{-1} \( \vec{z} -\frac{x_{\mu i}}{\sqrt{\ndim}} \vec{w}_i -\bomega_{\mu \to i}^t \)}}_{\equiv H_{\mu \to i}}\,,
+			\end{align*}
+			where we defined the mean and variance, depending on the node $i$:
+			\begin{align*}
+				\bomega_{\mu \to i}^t &\equiv  \frac{1}{\sqrt{\ndim}} \sum\limits_{j\neq i}^\ndim x_{\mu j}  \hat{\vec{w}}_{j\to \mu}^t \,, &&
+				\mat{V}_{\mu \to i}^t \equiv  \frac{1}{\ndim} \sum\limits_{j\neq i}^\ndim x_{\mu j}^2  \hat{\mat{C}}_{j \to \mu}^t\,.
+			\end{align*}
+			Again, in the limit $\ndim\to \infty$, the term $H_{\mu \to i}$ can be expanded as
+			\begin{align*}
+				H_{\mu \to i} &\simeq  e^{-\frac{1}{2} \( \vec{z} -\bomega_{\mu \to i}^t \)^\intercal (\mat{V}_{\mu \to i}^t)^{-1} \( \vec{z} -\bomega_{\mu \to i}^t \) } \\
+				& \times 
+				\( 1 + \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{w}_i^\intercal (\mat{V}_{\mu \to i}^t)^{-1} (\vec{z} -\bomega_{\mu \to i}^t) -\frac{1}{2}\frac{x_{\mu i}^2}{\ndim} \vec{w}_i^\intercal (\mat{V}_{\mu \to i}^t)^{-1} \vec{w}_i \right.\\
+			& \left. + \frac{1}{2} \frac{x_{\mu i}^2}{\ndim} \vec{w}_i^\intercal (\mat{V}_{\mu \to i}^t)^{-1} (\vec{z} -\bomega_{\mu \to i}^t) (\vec{z} - \bomega_{\mu \to i}^t)^\intercal  (\mat{V}_{\mu \to i}^t)^{-1} \vec{w}_i \).
+			\end{align*}
+			Putting all pieces together, the message $\tilde{m}_{\mu \to i}$ can be expressed using definitions of $\vec{f}_\out$ and $\partial_{\omega} \vec{f}_\out$ in \App\ref{appendix:definitions:updates:committee}. We finally obtain
+			\begin{align*}
+			&\tilde{m}_{\mu  \to i}^t (\vec{w}_i ) \sim \frac{1}{\mZ_{\mu \to i}} \left \{1 +  \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{w}_{i}^\intercal  \vec{f}_\out (y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \right. \\
+			&\left. \qquad\qquad \qquad\qquad + \frac{1}{2} \frac{x_{\mu i}^2}{\ndim} \vec{w}_{i}^\intercal \vec{f}_\out  \vec{f}_\out^\intercal (y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \vec{w}_{i} \right. \\
+			& \left.\qquad\qquad \qquad\qquad  + \frac{1}{2} \frac{x_{\mu i}^2}{\ndim} \vec{w}_{i}^\intercal  \partial_\bomega \vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t)  \vec{w}_{i}
+			\right\}\\
+			&= \frac{1}{\mZ_{\mu \to i}} \left\{ 1 + \vec{w}_{i}^\intercal  \vec{b}_{\mu \to i}^t +\frac{1}{2}  \vec{w}_{i}^\intercal  \vec{b}_{\mu \to i}^t (\vec{b}_{\mu \to i}^t)^\intercal  (\vec{w}_{i}) -\frac{1}{2} \vec{w}_{i}^\intercal  \mat{A}_{\mu \to i}^t w_{i} \right\} \\
+			&=\sqrt{\frac{\det{\mat{A}_{\mu \to i}^t}}{(2\pi)^K}} e^{-\frac{1}{2}\(\vec{w}_{i}^\intercal  - (\mat{A}_{\mu \to i}^t)^{-1}\vec{b}_{\mu \to i}^t \)^\intercal  \mat{A}_{\mu \to i}^t\(\vec{w}_{i}^\intercal  - (\mat{A}_{\mu \to i}^t)^{-1}\vec{b}_{\mu \to i}^t \) }
+			\end{align*}
+			with the following definitions of $\mat{A}_{\mu \to i}$ and $\vec{b}_{\mu \to i}$
+			\begin{align*}
+					\vec{b}_{\mu \to i}^t &\equiv  \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{f}_\out (y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \,,\\
+					\mat{A}_{\mu \to i}^t &\equiv - \frac{x_{\mu i}^2}{\ndim}  \partial_\bomega \vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t)\,.
+			\end{align*}
+			The set of BP equations can finally be closed over the Gaussian messages $\{m_{i\to \mu}\}_{i=1..\ndim}^{\mu=1..\nsamples}$ according to
+			\begin{align*}
+				 m_{i\to \mu}^{t+1} (\vec{w}_i) &= \frac{1}{\mZ_{i\to \mu}} \rP_\w (\vec{w}_i) \prod\limits_{\nu \neq \mu}^\nsamples \sqrt{\frac{\det{\mat{A}_{\nu \to i}^t}}{(2\pi)^K}} \\
+				 & \qquad \qquad \qquad \times e^{-\frac{1}{2}\(\vec{w}_{i} - (\mat{A}_{\nu \to i}^t)^{-1}\vec{b}_{\nu \to i}^t \)^\intercal  \mat{A}_{\nu \to i}^t\(w_{i} - (\mat{A}_{\nu \to i}^t)^{-1}\vec{b}_{\nu \to i}^t \) }.
+			\end{align*}
+			In the end, computing the mean and variance of the product of Gaussians, the messages are updated using $\vec{f}_\w$ and $\partial_\bgamma \vec{f}_\w$, defined in \App\ref{appendix:definitions:updates:committee}, according to
+			\begin{align*}
+				\hat{\vec{w}}_{i\to \mu}^{t+1} &= \vec{f}_\w( \bgamma_{\mu \to i}^t, \bLambda_{\mu \to i}^t  )\,,
+				&& \hat{\mat{C}}_{i \to \mu}^{t+1}=\partial_\bgamma \vec{f}_\w( \bgamma_{\mu \to i}^t, \bLambda_{\mu \to i}^t )\,,
+			\end{align*}
+			with
+			\begin{align*}
+				\bgamma_{\mu \to i}^t &= \sum\limits_{\nu \ne \mu}^\nsamples  \vec{b}_{\nu \to i}^t \,, 
+				&& \bLambda_{\mu \to i}^t = \sum\limits_{\nu \ne \mu}^\nsamples  \mat{A}_{\nu \to i}^t \,.
+			\end{align*}
+			
+		\paragraph{Summary of the rBP equations}
+			In the end, the \aclink{rBP} equations are simply the following set of equations:
+			\begin{align}
+			\label{appendix:amp:committee:relaxed_bp_summary}
+			\begin{aligned}
+				\hat{\vec{w}}_{i\to \mu}^{t+1} &= \vec{f}_\w(\bgamma_{\mu \to i}^t,\bLambda_{\mu \to i}^t )\,, 
+				&&\hat{\mat{C}}_{i \to \mu}^{t+1} = \partial_\bgamma \vec{f}_\w(\bgamma_{\mu \to i}^t, \bLambda_{\mu \to i}^t)  \\
+				\bgamma_{\mu \to i}^t &=  \sum\limits_{\nu \ne \mu}^\nsamples  \vec{b}_{\nu \to i}^t \,, 
+				&& \bLambda_{\mu \to i}^t =  \sum\limits_{\nu \ne \mu}^\nsamples  \mat{A}_{\nu \to i}^t   \\
+			\vec{b}_{\mu \to i}^t &=  \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{f}_\out (y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \,, \\ 
+			\mat{A}_{\mu \to i}^t &= - \frac{x_{\mu i}^2}{\ndim}  \partial_\bomega \vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \\
+				\bomega_{\mu \to i}^t &= \sum\limits_{j\neq i}^\ndim\frac{x_{\mu j}}{\sqrt{\ndim}}   \hat{\vec{w}}_{j\to \mu}^t\,,
+				&& \mat{V}_{\mu \to i}^t = \sum\limits_{j\neq i}^\ndim\frac{x_{\mu j}^2}{\ndim} \hat{\mat{C}}_{j\to \mu}^t\,.
+			\end{aligned}
+			\end{align}
+			
+\subsection{AMP algorithm}
+\label{appendix:amp:derivation:amp_eqs}
+	The \aclink{rBP} equations \eq\eqref{appendix:amp:committee:relaxed_bp_summary} contains $\Theta(\ndim^2)$ messages. However all the messages depend weakly on the target node. The missing message is negligible in the limit $\ndim \to \infty$, that allows us to expand the \aclink{rBP} around the \emph{full} messages:
+			\begin{align}
+			\begin{aligned}
+				\bomega_{\mu}^t &\equiv \sum\limits_{j = 1}^\ndim\frac{x_{\mu j}}{\sqrt{\ndim}}   \hat{\vec{w}}_{j\to \mu}^t\,, 
+				&& \mat{V}_{\mu}^t \equiv \sum\limits_{j=1}^\ndim  \frac{x_{\mu j}^2}{\ndim}  \hat{\mat{C}}_{j\to \mu}^t \\
+				\bgamma_{i}^t & \equiv  \sum\limits_{\mu =1}^\nsamples  \vec{b}_{\mu \to i}^t \,,
+				&& \bLambda_{i}^t \equiv  \sum\limits_{\mu =1}^\nsamples  \mat{A}_{\mu \to i}^t \,.
+			\end{aligned}		
+			\end{align}
+			By completing the sum, we naturally remove the target node dependence and reduce the set of messages to $\Theta(\ndim)$. Let us now perform the expansion of the \aclink{rBP} messages.
+	
+	\paragraph{Partial covariance $\vec{f}_\w$: $\bLambda_{\mu \to i}^t$}
+			\begin{align*}
+				&\bLambda_{\mu \to i}^t =  \sum\limits_{\nu \ne \mu}^\nsamples  \mat{A}_{\nu \to i}^t 
+				=  \sum\limits_{\nu =1 }^\nsamples  \mat{A}_{\nu \to i}^t - \mat{A}_{\mu \to i}^t  \\
+				&= \bLambda_{i}^t - \mat{A}_{\mu \to i}^t = \bLambda_{i  }^t + \Theta\(\frac{1}{\ndim} \) \,.
+			\end{align*}
+			
+	\paragraph{Partial mean $\vec{f}_\w$: $\bgamma_{\mu \to i}^t$}
+			\begin{align*}
+				\bgamma_{\mu \to i}^t &= \sum\limits_{\nu \ne \mu}^\nsamples  \vec{b}_{\nu \to i}^t  = \sum\limits_{\nu =1}^\nsamples  \vec{b}_{\nu \to i}^t -  \vec{b}_{\mu \to i}^t = \bgamma_{i}^t - \vec{b}_{\mu \to i}^t + \Theta\(\frac{1}{\ndim}\)\,.
+			\end{align*}
+			
+	\paragraph{Mean $\hat{\vec{w}}_{i\to \mu}^{t+1}$ update}
+			\begin{align*}
+				\hat{\vec{w}}_{i\to \mu}^{t+1} &= \vec{f}_\w(\bgamma_{\mu \to i}^t , \bLambda_{\mu \to i}^t ) = \vec{f}_\w\(\bgamma_{i}^t - \vec{b}_{\mu \to i}^t,  \bLambda_{i}^t \) + \Theta\(\frac{1}{\ndim}\)\\
+				&= \vec{f}_\w\(\bgamma_{i}^t, \bLambda_{i}^t \) -  \partial_\bgamma \vec{f}_\w \(\bgamma_{i}^t, \bLambda_{i}^t\) \vec{b}_{\mu \to i}^t  + \Theta\( \frac{1}{\ndim} \) \\
+				&= \hat{\vec{w}}_{i}^{t+1} - \hat{\mat{C}}_{i}^{t+1} \vec{b}_{\mu \to i}^t  + \Theta\( \frac{1}{\ndim} \)\\
+				&= \hat{\vec{w}}_{i}^{t+1} - \frac{x_{\mu i}}{\sqrt{\ndim}} \hat{\mat{C}}_{i}^{t+1} \vec{f}_\out (y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t) + \Theta\( \frac{1}{\ndim} \)\,.
+			\end{align*}
+			where we defined the prior updates
+			\begin{align*}
+				\hat{\vec{w}}_{i}^{t+1} &\equiv \vec{f}_\w\( \bgamma_{i}^t, \bLambda_{i}^t \)\,, && \hat{\mat{C}}_{i}^{t+1}\equiv \partial_\bgamma  \vec{f}_\w\(\bgamma_{i}^t, \bLambda_{i}^t \)\,,
+			\end{align*}
+			and used the fact that $\vec{b}_{\mu \to i}^t \simeq \frac{x_{\mu i}}{\sqrt{\ndim}} \hat{\mat{C}}_{i}^{t+1} \vec{f}_\out (y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t) $ by expanding the equation over $\vec{b}_{\mu \to i}^t$ in \eqref{appendix:amp:committee:relaxed_bp_summary}.
+			
+		\paragraph{Covariance $\hat{\mat{C}}_{i\to \mu}^{t+1}$ update}
+			\begin{align*}
+				\hat{\mat{C}}_{i\to \mu}^{t+1} &= \partial_\bgamma \vec{f}_\w(\bgamma_{\mu \to i}^t, \bLambda_{\mu \to i}^t) \\
+				&\simeq \partial_\bgamma \vec{f}_\w(\bgamma_{i}^t, \bLambda_{i}^t)  + \Theta\( \frac{1}{\sqrt{\ndim}} \) = \hat{\mat{C}}_{i}^{t+1} + \Theta\( \frac{1}{\sqrt{\ndim}} \) \,.
+			\end{align*}
+		
+		\paragraph{Channel update function $\vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t)$}
+	
+			\begin{align*}
+				&\vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) = \vec{f}_\out \(y_{\mu}, \bomega_{\mu}^t - \frac{x_{\mu i}}{\sqrt{\ndim}}   \hat{\vec{w}}_{i\to \mu}^t, \mat{V}_{\mu}^t - \frac{x_{\mu i}^2}{\ndim}   \hat{\mat{C}}_{i \to l}^t \)\\
+				&= \vec{f}_\out \( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \) - \frac{x_{\mu i}}{\sqrt{\ndim}} \partial_\bomega \vec{f}_\out\( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \)   \underbrace{\hat{\vec{w}}_{i\to \mu}^t}_{=\hat{\vec{w}}_{i}^t + \Theta\( \frac{1}{\sqrt{\ndim}}\)} + \Theta\( \frac{1}{\ndim}\)\\
+				&= \vec{f}_\out \( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \)-\frac{x_{\mu i}}{\sqrt{\ndim}} \partial_\bomega \vec{f}_\out\( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \)   \hat{\vec{w}}_{i}^t + \Theta\( \frac{1}{\ndim}\)\,.
+			\end{align*}
+			
+		\paragraph{Covariance $\vec{f}_\out$: $\mat{V}_{\mu}^t$}
+			\begin{align*}
+			 \mat{V}_{\mu}^t &\equiv \sum\limits_{j=1}^\ndim  \frac{x_{\mu j}^2}{\ndim}  \hat{\mat{C}}_{j\to \mu}^t = \sum\limits_{j=1}^\ndim  \frac{x_{\mu j}^2}{\ndim}  \hat{\mat{C}}_{j\to \mu}^t + \Theta \( \frac{1}{\ndim^{3/2}}\) \,.
+			\end{align*}
+			
+		\paragraph{Mean $\vec{f}_\out$: $\bomega_{\mu}^t$}
+			\begin{align*}
+				\bomega_{\mu}^t &= \sum\limits_{i = 1}^{\ndim} \frac{x_{\mu i}}{\sqrt{\ndim}}   \hat{\vec{w}}_{i\to \mu}^t \\
+				&= \sum\limits_{i = 1}^{\ndim} \frac{x_{\mu i}}{\sqrt{\ndim}} \(\hat{\vec{w}}_{i}^t - x_{\mu i} \hat{\mat{C}}_{i}^t \vec{f}_\out (y_{\mu}, \bomega_{\mu}^{t-1}, \mat{V}_{\mu}^{t-1}) + \Theta\( \frac{1}{\ndim} \)  \) \\
+				&= \sum\limits_{i = 1}^{\ndim} \frac{x_{\mu i}}{\sqrt{\ndim}} \hat{\vec{w}}_{i}^t -   \sum\limits_{i = 1}^{\ndim} \frac{x_{\mu i}^2}{\ndim}\hat{\mat{C}}_{i}^t \vec{f}_\out ( y_{\mu}, \bomega_{\mu}^{t-1}, \mat{V}_{\mu}^{t-1}) + \Theta \( \frac{1}{\ndim^{3/2}}\)\,.
+			\end{align*}
+			
+		\paragraph{Covariance $\vec{f}_\w$: $\bLambda_{i}^t$}
+			\begin{align*}
+			\bLambda_{i}^t &\equiv  \sum\limits_{\mu =1}^\nsamples  \mat{A}_{\mu \to i}^t  =   \sum\limits_{\nu =1}^\nsamples - \frac{x_{\mu i}^2}{\ndim}  \partial_\bomega \vec{f}_\out(y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t)   \\
+			&=   \sum\limits_{\mu =1}^\nsamples - \frac{x_{\mu i}^2}{\ndim}  \partial_\bomega \vec{f}_\out(y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t)  + \Theta\( \frac{1}{\ndim^{3/2}}\) \,.
+			\end{align*}
+			
+		\paragraph{Mean $\vec{f}_\w$: $\bgamma_{i}^t$}
+			\begin{align*}
+			\bgamma_{i}^t &=  \sum\limits_{\mu =1}^\nsamples  \vec{b}_{\mu \to i}^t =  \sum\limits_{\mu =1}^\nsamples   \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{f}_\out (y_{\mu}, \bomega_{\mu \to i}^t, \mat{V}_{\mu \to i}^t) \\
+			&= \sum\limits_{\mu =1}^\nsamples    \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{f}_\out (y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t) \\
+			& \qquad -\frac{x_{\mu i}^2}{\ndim} \partial_\bomega \vec{f}_\out (y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t) \hat{\vec{w}}_{i}^t  + \Theta\(\frac{1}{\ndim^{3/2}} \)\,.
+			\end{align*}
+			
+		\subsubsection*{Summary - AMP algorithm}
+		We finally obtain the AMP algorithm as a reduced set of $\Theta(\ndim)$ messages in \Alg\ref{alg:appendix:amp:committee_machine}.
+			\begin{algorithm} 
+			\begin{algorithmic}
+			    \STATE {\bfseries Input:} vector $\vec{y} \in \bbR^\nsamples$ and matrix $\mat{X}\in \bbR^{\nsamples \times \ndim}$:
+			    \STATE \emph{Initialize}: $\hat{\vec{w}}_i$, $\vec{f}_{\out,\mu} \in \bbR^K$ and $\hat{\mat{V}}_i$, $\partial_{\bomega} \vec{f}_{\out, \mu} \in \bbR^{K\times K}$ for $ 1 \leq i \leq \ndim $ and $ 1 \leq \mu \leq \nsamples $ at $t=0$.
+			    \REPEAT   
+			    \STATE \noindent Channel: Update the mean $\omega_{\mu} \in \bbR^K$ and variance $V_{\mu}\in \bbR^{K\times K}$: \spacecase
+			    \indent $\mat{V}_{\mu}^t = \sum\limits_{i=1}^\ndim  \frac{x_{\mu j}^2}{\ndim}  \hat{\mat{C}}_{i}^t $\\ 
+			    \indent $\bomega_{\mu}^t = \sum\limits_{i = 1}^{\ndim} \frac{x_{\mu i}}{\sqrt{\ndim}} \hat{\vec{w}}_{i}^t -   \mat{V}_{\mu}^t \vec{f}_{\out,\mu}^{t-1}$\,, \\
+			    \STATE \noindent Update $\vec{f}_{\out, \mu}$ and $\partial_\bomega \vec{f}_{\out,\mu}$: \spacecase
+			    $\vec{f}_{\out,\mu}^t = \vec{f}_\out \( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \)$\,, $ \partial_\bomega \vec{f}_{\out^,\mu}^t = \partial_\bomega\vec{f}_\out \( y_{\mu}, \bomega_{\mu}^t, \mat{V}_{\mu}^t \)$ \spacecase
+			    \STATE \noindent Prior: Update the mean $\bgamma_i \in \bbR^K$ and variance $\bLambda_i \in \bbR^{K\times K}$:\spacecase
+			    $ \bLambda_{i}^t =  \sum\limits_{\mu =1}^\nsamples - \frac{x_{\mu i}^2}{\ndim}  \partial_\bomega \vec{f}_{\out, \mu} $\spacecase
+			    $\bgamma_i^t = \sum\limits_{\mu =1}^\nsamples    \frac{x_{\mu i}}{\sqrt{\ndim}} \vec{f}_{\out,\mu} + \bLambda_{i}^t \hat{\vec{w}}_{i}^t $\,,
+			    \STATE Update the estimated marginals $\hat{\vec{w}}_i \in \bbR$ and $\hat{\mat{C}}_i \in \bbR^+$: \spacecase
+			   $\hat{\vec{w}}_{i}^{t+1}= \vec{f}_\w\( \bgamma_{i}^t, \bLambda_{i}^t \)$\,, $\hat{\mat{C}}_{i}^{t+1}= \partial_\bgamma  \vec{f}_\w\(\bgamma_{i}^t, \bLambda_{i}^t \)$\spacecase
+			    \STATE ${t} \leftarrow {t} + 1$ 
+			    \UNTIL{Convergence on
+			    $\hat{\vec{w}}_i$, $\hat{\mat{C}}_i$.} 
+			    \STATE {\bfseries Output:}
+			    $\{\hat{\vec{w}_i}\}_{i=1}^\ndim$ and $\{\hat{\mat{C}}_i\}_{i=1}^\ndim$.
+			\end{algorithmic}
+			\caption{Approximate Message Passing algorithm for committee machines.}
+  			\label{alg:appendix:amp:committee_machine}
+			\end{algorithm}
+			
+\subsection{State evolution equations of AMP}
+\label{appendix:amp:derivation:se_eqs}
+In this section we derive the behavior of the AMP algorithm in  \Alg\ref{alg:appendix:amp:committee_machine} in the thermodynamic limit $\ndim \to \infty$. This average asymptotic behavior can be tracked with some overlap parameters at time $t$, $\mat{m}^t$, $\mat{q}^t$, $\bSigma^t$, that respectively measure the correlation of the AMP estimator with the ground truth, the norms of student and teacher weights, the estimator variance and the second moment of the teacher network $ \brho_{\w^\star}$, defined by
+\begin{align}
+\begin{aligned}
+	\mat{m}^t &\equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim}\hat{\mat{W}}^{t \intercal} \hat{\mat{W}}^{\star} \,, 
+	&& \mat{q}^t  \equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim} \hat{\mat{W}}^{t \intercal} \hat{\mat{W}}^{t}  \,, \\ 
+	\bSigma^t & \equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim} \sum_{i=1}^\ndim \hat{\mat{C}}_{i}^{t} \,, &&
+	\brho_{\w^\star} \equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim} \mat{W}^{\star \intercal} \mat{W}^{\star} \,,
+\end{aligned}
+\label{appendix:amp:derivation:se_eqs:overlaps}
+\end{align}
+where the expectation is over ground truth signals $\mat{W}^\star$ and input data $\mat{X}$. The aim is to derive the asymptotic behavior of these overlap parameters, called \aclink{SE}. The idea is simply to compute the overlap distributions starting with the set of \aclink{rBP} equations in \eqref{appendix:amp:committee:relaxed_bp_summary}.
+
+\subsubsection{Messages distribution}
+In order to get the asymptotic behavior of the overlap parameters, we first need to compute the distribution of $\mat{W}^{t+1}$ and, as a result, of the mean $\bgamma_{\mu \to i}^t$ and covariance $\bLambda_{\mu \to i}^t$. 
+Recalling that under the BP assumption incoming messages are independent, the messages $\bomega_{\mu \to i}^t$ and $\vec{z}_{\mu}$ are the sum of independent variables and follow Gaussian distributions. 
+However, these two variables are correlated and we need to compute correctly the covariance matrix.
+
+To compute it, we will make use of different ingredients. 
+First, we recall that in the \aclink{T-S} scenario, the output has been generated by a teacher such that $\forall \mu \in \lb \nsamples \rb,~ y_\mu = \varphi_{\out^\star} \(\frac{1}{\sqrt{\ndim}} \vec{x}_\mu^\intercal \mat{W}^\star \)$. By convenience, we define $\vec{z}_\mu \equiv \frac{1}{\sqrt{\ndim}} \vec{x}_\mu^\intercal \mat{W}^\star = \frac{1}{\sqrt{\ndim}} \sum_{i=1}^\ndim x_{\mu i} \vec{w}_i^\star $ and $z_{\mu \to i} \equiv  \frac{1}{\sqrt{\ndim}} \sum_{j \ne i}^\ndim x_{\mu j} \vec{w}_j^\star$. 
+Second, in the case the input data are \aclink{i.i.d} Gaussian, we have $\EE_{\mat{X}}[x_{\mu i}] = 0 $ and $\EE_{\mat{X}} [x_{\mu i}^2] = 1$.
+
+\paragraph{Partial mean $\vec{f}_\out$: $\bomega_{\mu \to i}^t$}
+Let's compute the first two moments, using expansions of the \aclink{rBP} equations \eqref{appendix:amp:committee:relaxed_bp_summary}:
+\begin{align*}
+	&\EE\[ \bomega_{\mu \to i}^t\]  = \frac{1}{\sqrt{\ndim}} \sum\limits_{j \neq i}^\ndim  \EE_{\mat{X}} \[ x_{\mu j}\]   \EE \[ \hat{\vec{w}}_{j\to \mu}^t \] = \vec{0}\,, \\
+	&\EE \[ \bomega_{\mu \to i}^t \( \bomega_{\mu \to i}^t\)^\intercal \]  = \frac{1}{\ndim} \sum\limits_{j \neq i}^\ndim \EE_{\mat{X}} \[ x_{\mu j}^2\]  \EE\[ \hat{\vec{w}}_{j\to \mu}^t \(\hat{\vec{w}}_{j\to \mu}^t\)^\intercal\]\\
+	&= \frac{1}{\ndim} \sum\limits_{i=1}^\ndim \EE_{\mat{X}} \[ x_{\mu j}^2\]  \EE\[ \hat{\vec{w}}_{i}^t \(\hat{\vec{w}}_{i}\)^\intercal\] + \Theta\(\ndim^{-3/2}\)  \underlim{\ndim}{\infty} \mat{q}^t\,.
+\end{align*}	
+
+\paragraph{Hidden variable $\vec{z}_{\mu}$}
+Let us compute the first moments of the hidden variable $\vec{z}_{\mu}$:
+\begin{align*}
+	\EE \[ \vec{z}_\mu \]  &= \frac{1}{\sqrt{\ndim}} \sum\limits_{i=1}^\ndim \EE_{\mat{X}}\[x_{\mu i}\] \EE_{\mat{W}^\star}\[\vec{w}_i^\star\]  = \vec{0} \,, \\
+	\EE \[  \vec{z}_\mu  \vec{z}_\mu^\intercal \]  &= \frac{1}{\ndim} \sum\limits_{i=1}^\ndim \EE_{\mat{X}}\[x_{\mu i}^2\] \EE_{\mat{W}^\star}\[ \vec{w}_i^\star (\vec{w}_i^\star)^\intercal\] \underlim{\ndim}{\infty}\brho_{\w^\star} \,.
+\end{align*}
+
+\paragraph{Correlation between $\vec{z}_{\mu}$ and $\bomega_{\mu \to i}^t$}
+The cross correlation is given by
+\begin{align*}
+	&\EE \[ \bomega_{\mu \to i}^t  \vec{z}_\mu^\intercal \] =  \frac{1}{\ndim} \sum\limits_{j\neq i, k=1 }^\ndim \EE_{\mat{X}} \[x_{\mu j} x_{\mu k} \]  \EE_{\mat{W}^\star} \[ \hat{\vec{w}}_{j\to \mu}^t (\vec{w}_{k}^\star)^\intercal \]  \\
+	&=  \frac{1}{\ndim} \sum\limits_{j\neq i}^\ndim  \EE_{\mat{W}^\star} \[ \hat{\vec{w}}_{j\to \mu}^t (\vec{w}_{j}^\star)^\intercal \] = \frac{1}{\ndim} \sum\limits_{i}^\ndim  \EE_{\mat{W}^\star} \[ \hat{\vec{w}}_{i}^t (\vec{w}_{i}^\star)^\intercal \] + \Theta\(\ndim^{-3/2}\)\\
+	& \qquad \underlim{\ndim}{\infty} \mat{m}^t \,.
+\end{align*}
+Hence asymptotically the random vector ($\vec{z}_\mu$, $\bomega_{\mu \to i}^t$) follow a multivariate Gaussian distribution with covariance matrix 
+$ \mat{Q}^t = 
+\begin{bmatrix}
+    \brho_{\w^\star} & \mat{m}^t \\
+    \mat{m}^t & \mat{q}^t  \\
+\end{bmatrix} \in \bbR^{(2K) \times (2K)}$.
+ 
+\paragraph{Partial variance $\vec{f}_\out$: $\mat{V}_{\mu \to i}$} 
+$\mat{V}_{\mu \to i}$ concentrates around its mean:
+\begin{align*}
+	\EE \[ \mat{V}_{\mu \to i}^t \] &= \frac{1}{\ndim} \sum\limits_{j\neq i}^\ndim \EE_{\mat{X}} \[ x_{\mu j}^2 \] \hat{\mat{C}}_{j\to \mu}^t = \frac{1}{\ndim} \sum\limits_{i}^\ndim \hat{\mat{C}}_{i}^t + \Theta(\ndim^{-3/2}) \underlim{\ndim}{\infty} \bSigma^t \,.
+\end{align*}
+
+\paragraph{Ad-hoc overlaps}
+Let us define some other ad-hoc order parameters, that will appear in the following:
+\begin{align}
+\begin{aligned}
+		\hat{\mat{q}}^t & \equiv \alpha \EE_{\bomega,\vec{z}} \[ \vec{f}_{\out} (\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t )^{\otimes 2}  \]  \,, \\
+		 \hat{\mat{m}}^t &\equiv \alpha \EE_{\bomega, \vec{z}} \[ \partial_\vec{z} \vec{f}_{\out}(\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t ) \]  \,, \\
+		  \hat{\bchi}^t &\equiv \alpha \EE_{\bomega, \vec{z}} \[ - \partial_\bomega \vec{f}_{\out}(\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t ) \] \,. \\
+\end{aligned}
+\end{align}
+
+\paragraph{Partial mean $\vec{f}_\w$: $\bgamma_{\mu \to i}^t$} 
+Using the expression $y_\nu = \varphi_{\out^\star}\( \vec{z}_{\nu \to i} + \frac{1}{\sqrt{\ndim}} x_{\nu i} \vec{w}_i^\star \)$ and expanding $\bgamma_{\mu \to i}^t$, we obtain
+\begin{align*}
+	&\bgamma_{\mu \to i}^t =  \sum\limits_{\nu \ne \mu}^\nsamples  \vec{b}_{\nu \to i}^t  =  \sum\limits_{\nu \ne \mu}^\nsamples  \frac{x_{\nu i}}{\sqrt{\ndim}} \vec{f}_\out \( y_\nu , \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t\) \\
+	&=   \frac{1}{\sqrt{\ndim}} \sum\limits_{\nu \ne \mu}^\nsamples  x_{\nu i} \vec{f}_\out \( \varphi_{\out^\star}\( \vec{z}_{\nu \to i} \), \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t\) \\
+	& + \frac{1}{\ndim} \sum\limits_{\nu \ne \mu}^\nsamples x_{\nu i}^2 \partial_\vec{z}\vec{f}_\out \( \varphi_{\out^\star}\( \vec{z}_{\nu \to i}\), \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t\) \vec{w}_i^\star \,.
+\end{align*}
+Thus, taking the average
+\begin{align*}
+	\EE\[ \bgamma_{\mu \to i}^t \] &= \vec{0} + \frac{1}{\ndim} \sum\limits_{\nu \ne \mu}^\nsamples \EE_{\vec{z}, \bomega} \[ \partial_\vec{z}\vec{f}_\out \( \varphi_{\out^\star}\( \vec{z}_{\nu \to i}\), \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t\) \] \vec{w}_i^\star \\
+	& \underlim{\ndim}{\infty} \hat{\mat{m}}^t  \vec{w}_i^\star \,, \\
+	\EE\[ (\bgamma_{\mu \to i}^t)^{\otimes 2} \] &= \frac{1}{\ndim} \sum\limits_{\nu \ne \mu}^\nsamples  \EE_{\vec{z}, \bomega}\[ \vec{f}_\out \( \varphi_{\out^\star}\( \vec{z}_{\nu \to i} \), \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t\)^{\otimes 2} \] \\
+	& \underlim{\ndim}{\infty} \hat{\mat{q}}^t\,.
+\end{align*}
+Hence $ \bgamma_{\mu \to i}^t \sim  \hat{\mat{m}}^t \vec{w}_i^\star  + ( \hat{\mat{q}}^t)^{1/2}\bxi $ with $\bxi \sim \mN(\vec{0},\rI_K)$. 
+
+\paragraph{Partial covariance $\vec{f}_\w$: $\bLambda_{\mu \to i}^t$}
+\begin{align*}
+	\bLambda_{\mu \to i}^t &= \sum\limits_{\nu \ne \mu}^\nsamples  \mat{A}_{\nu \to i}^t =  - \frac{1}{\ndim}  \sum\limits_{\nu \ne \mu}^\nsamples x_{\mu i}^2 \partial_\bomega \vec{f}_\out(y_{\nu}, \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t) \\
+	& = - \frac{1}{\ndim}  \sum\limits_{\nu \ne \mu}^\nsamples x_{\mu i}^2 \partial_\bomega \vec{f}_\out( \varphi_{\out^\star}(\vec{z}_{\nu \to i}) , \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t)  + \Theta\(\ndim^{-3/2} \)
+\end{align*}
+and taking the average 
+\begin{align*}
+	\EE \[ \bLambda_{\mu \to i}^t\] &= - \frac{1}{\ndim}  \sum\limits_{\nu \ne \mu}^\nsamples \EE_{\vec{z}, \bomega}\[ \partial_\bomega \vec{f}_\out( \varphi_{\out^\star}(\vec{z}_{\nu \to i}) , \bomega_{\nu \to i}^t, \mat{V}_{\nu \to i}^t)\]\\
+	& \qquad \underlim{\ndim}{\infty}  \hat{\bchi}^t\,,
+\end{align*} 
+so that in the thermodynamic limit $\bLambda_{\mu \to i}^t \sim \hat{\bchi}^t$.
+
+\subsubsection{Summary of the SE - mismatched setting}
+Using the definition of the overlaps in \eqref{appendix:amp:derivation:se_eqs:overlaps} at time $t+1$ and the message distributions, we finally obtain the set of \aclink{SE} equations of the AMP algorithm in \Alg\ref{alg:appendix:amp:committee_machine} in the mismatched setting:
+\begin{align}
+\begin{aligned}
+	\mat{m}^{t+1} & \equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim}\hat{\mat{W}}^{t+1 \intercal} \hat{\mat{W}}^{\star} = \EE_{\vec{w}^\star, \bxi} \[  \vec{f}_\w\( \hat{\mat{m}}^t \vec{w}^\star  + ( \hat{\mat{q}}^t)^{1/2}\bxi, \hat{\bchi}^t \) \vec{w}^{\star \intercal} \]  \,, \\
+	\mat{q}^{t+1} &\equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim} \hat{\mat{W}}^{t+1 \intercal} \hat{\mat{W}}^{t+1}= \EE_{\vec{w}^\star, \bxi} \[  \vec{f}_\w\( \hat{\mat{m}}^t \vec{w}^\star  + ( \hat{\mat{q}}^t)^{1/2}\bxi, \hat{\bchi}^t \)^{\otimes 2} \] \,, \\ 
+	\bSigma^{t+1} & \equiv \displaystyle \EE \lim_{\ndim \to \infty} \frac{1}{\ndim} \sum_{i=1}^\ndim \hat{\mat{C}}_{i}^{t+1} = \EE_{\vec{w}^\star, \bxi} \[  \partial_\bgamma \vec{f}_\w\( \hat{\mat{m}}^t \vec{w}^\star  + ( \hat{\mat{q}}^t)^{1/2}\bxi, \hat{\bchi}^t \) \] \,,
+\end{aligned}
+\end{align}
+and
+\begin{align}
+\begin{aligned}
+	\hat{\mat{q}}^t &= \alpha\int_{\bbR^K} \int_{\bbR^K} \d \bomega ~ \d \vec{z} ~ \mN_{(\vec{z}, \bomega)}\(\vec{0}_{2K}, \mat{Q}^t \) \vec{f}_{\out} (\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t )^{\otimes 2} \\
+	\hat{\mat{m}}^t &= \alpha\int_{\bbR^K} \int_{\bbR^K} \d \bomega ~ \d \vec{z} ~ \mN_{(\vec{z}, \bomega)}\(\vec{0}_{2K}, \mat{Q}^t \)) \partial_\vec{z} \vec{f}_{\out}(\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t ) \,, \\
+	\hat{\bchi}^t &= -\alpha \int_{\bbR^K} \int_{\bbR^K} \d \bomega ~ \d \vec{z} ~ \mN_{(\vec{z}, \bomega)}\(\vec{0}_{2K}, \mat{Q}^t \)  \partial_\bomega \vec{f}_{\out}(\varphi_{\out^\star}(\vec{z}), \bomega, \bSigma^t ) \,. 
+\end{aligned}
+\end{align}
+with $ \mat{Q}^t = 
+\begin{bmatrix}
+    \brho_{\w^\star} & \mat{m}^t \\
+    \mat{m}^t & \mat{q}^t  \\
+\end{bmatrix} \in \bbR^{(2K) \times (2K)}$.
+
+\subsubsection{Summary of the SE - Bayes-optimal setting}
+In the Bayes-optimal setting, the student $\rP_\w = \rP_{\w^\star}$ and $\rP_\out = \rP_{\out^\star}$, so that we have $\vec{f}_\w = \vec{f}_{\w^\star}$ and $\vec{f}_\out = \vec{f}_{\out^\star}$. Moreover, the Nishimori conditions, recalled in \App\ref{appendix:replica_computation:nishimori}, imply that
+\begin{align*}
+	\mat{m}^t &= \mat{q}^t \equiv \mat{q}^t_\bayes  \,, && \hat{\mat{q}}^t  = \hat{\mat{m}}^t = \hat{\bchi}^t \equiv \hat{\mat{q}}^t_\bayes \,, && \bSigma^{t} =  \brho_{\w^\star} - \mat{q}^t\,.
+\end{align*}
+Therefore the set of \aclink{SE} equations simplify and reduce to
+\begin{align}
+	\mat{q}^{t+1}_\bayes &= \EE_{\vec{w}^\star, \bxi} \[  \vec{f}_{\w^\star}\( \hat{\mat{q}}^t_\bayes \vec{w}^\star  + ( \hat{\mat{q}}^t_\bayes)^{1/2}\bxi, \hat{\mat{q}}^t_\bayes \)^{\otimes 2} \] \label{appendix:amp:se:bayes} \\
+	\hat{\mat{q}}^t_\bayes &= \alpha\int_{\bbR^K} \int_{\bbR^K} \d \bomega ~ \d \vec{z} ~ \mN_{(\vec{z}, \bomega)}\(\vec{0}_{2K} , \mat{Q}^t_\bayes \) \vec{f}_{\out^\star} (\varphi_{\out^\star}(\vec{z}), \bomega,  \brho_{\w^\star} - \mat{q}^t_\bayes )^{\otimes 2} \nonumber
+\end{align}
+with the simplified covariance matrix $\mat{Q}^t_\bayes=\begin{bmatrix}
+     \brho_{\w^\star} & \mat{q}^t_\bayes \\
+    \mat{q}^t_\bayes & \mat{q}^t_\bayes  \\
+  \end{bmatrix} $.
+
+
+
+\section{Consistency between AMP and the replica computation}
+Very surprisingly, the \aclink{SE} of the AMP algorithm can be obtained in a convoluted and more rapid way. It turns out that in the Bayes-optimal setting, AMP performs a gradient ascent on the \aclink{RS} free entropy in \eqref{appendix:free_entropy_bayes}. Meaning that at convergence, and under good initialization, the AMP overlaps are given by the saddle point equations of the \aclink{RS} free entropy $\Phi^{(\rs)}$. 
+To see this, we shall start performing the change of variable $\bxi \leftarrow \bxi + \(\hat{\mat{q}}^t_\bayes\)^{1/2} \vec{w}^\star$ in \eqref{appendix:amp:se:bayes} so that we directly obtain the first equation of \eqref{appendix:se_equations_generic:bayes} with the corresponding time indices
+\begin{align}
+	\mat{q}^{t+1}_\bayes &= \EE_{\vec{w}^\star, \bxi} \[ \mZ_{\w^\star}\(( \hat{\mat{q}}^t_\bayes)^{1/2}\bxi, \hat{\mat{q}}^t_\bayes\)  \vec{f}_{\w^\star}\( ( \hat{\mat{q}}^t_\bayes)^{1/2}\bxi, \hat{\mat{q}}^t_\bayes \)^{\otimes 2} \]\,.
+\end{align}
+Moreover in this setting, we notice that variables $\bomega_{\mu \to i}^t$ and $\vec{z}_\mu - \bomega_{\mu \to i}^t$ become independent since
+\begin{align*}
+	\EE \[ \bomega_{\mu \to i}^t\(  \vec{z}_\mu - \bomega_{\mu \to i}^t \)^\intercal \] & \underlim{\ndim}{\infty} \mat{m}^t - \mat{q}^t = \mat{q}^t_\bayes - \mat{q}^t_\bayes = \vec{0}\,,\\
+	\EE \[ \bomega_{\mu \to i}^t (\bomega_{\mu \to i}^t)^\intercal \]& \underlim{\ndim}{\infty} \mat{q}^t_\bayes\,, \\
+	\EE \[ \(  \vec{z}_\mu - \bomega_{\mu \to i}^t \) \(  \vec{z}_\mu - \bomega_{\mu \to i}^t \)^\intercal \] &\underlim{\ndim}{\infty} \brho_{\w^\star} - \mat{q}^t_\bayes \,,
+\end{align*}
+so that the multivariate Gaussian distribution factorize to
+$$\mN_{(\vec{z}, \bomega)}\(\vec{0}, \mat{Q}^t_\bayes \) = \mN_{\bomega}\(\vec{0}_K, \mat{q}^t_\bayes \) \mN_{\vec{z}}\(\bomega,  \brho_{\w^\star} - \mat{q}^t_\bayes \).$$ 
+Using $\rP_{\out^\star}(y|\vec{z}) = \delta\( y - \varphi_{\out^\star}(\vec{z})\)$ the second equation of \eqref{appendix:amp:se:bayes} becomes
+\begin{align*}
+	\hat{\mat{q}}^t &= \alpha\int_{\bbR^K} \int_{\bbR^K} \d \bomega ~ \d \vec{z} ~ \mN_{(\vec{z}, \bomega)}\(\vec{0}_{2K}, \mat{Q}^t_\bayes \) \vec{f}_{\out^\star} (\varphi_{\out^\star}(\vec{z}), \bomega,  \brho_{\w^\star} - \mat{q}^t_\bayes )^{\otimes 2} \\
+	&= \alpha \int_\bbR \d y ~ \int_{\bbR^K} \d \bomega ~ \mN_{\bomega}\(\vec{0}_K, \mat{q}^t_\bayes \)  \\
+	&\qquad \times \int_{\bbR^K} \d \vec{z} ~ \rp_{\out^\star}(y | \vec{z}) \mN_{\vec{z}}\( \bomega ;  \brho_{\w^\star} - \mat{q}^t_\bayes \)\vec{f}_{\out^\star} (y, \bomega,  \brho_{\w^\star} - \mat{q}^t_\bayes )^{\otimes 2}\\
+	&= \alpha \int_\bbR  \d y ~ \int_{\bbR^K} \d \bxi ~ \mN_{\bxi}\(\vec{0} ; \rI_K \)  \int_{\bbR^K} \d \vec{z} ~ \rp_{\out^\star}(y | \vec{z}) \\
+	& \qquad \qquad \times  \mN_{\vec{z}}\( (\mat{q}^t_\bayes)^{1/2}\bxi ;  \brho_{\w^\star} - \mat{q}^t_\bayes \) \vec{f}_{\out^\star} (y, (\mat{q}^t_\bayes)^{1/2}\bxi ,  \brho_{\w^\star} - \mat{q}^t_\bayes)^{\otimes 2} \tag{Change of variable $\bxi \leftarrow (\mat{q}^t_\bayes)^{-1/2} \bomega^t$}\\
+	&= \alpha \int_\bbR  \d y ~ \EE_{\bxi} \mZ_{\out^\star}\(y, (\mat{q}^t_\bayes)^{1/2}\bxi ,  \brho_{\w^\star} - \mat{q}^t_\bayes\)  \\
+	& \qquad \qquad \qquad \qquad  \times \vec{f}_{\out^\star}\(y,  (\mat{q}^t_\bayes)^{1/2}\bxi ,  \brho_{\w^\star} - \mat{q}^t_\bayes  \)\,,
+\end{align*}
+which is exactly the second fixed point equation of the \aclink{RS} free entropy \eqref{appendix:se_equations_generic:bayes}.
+

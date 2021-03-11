@@ -1132,14 +1132,14 @@ that simplify allows to recover Eq.\ref{appendix:se_amp} without time indices:
 
 Finally to decouple replicas we use a Hubbard Stratanovich (Gaussian transformation), where $D\xi = \frac{e^{-\xi^2/2}}{\sqrt{2\pi}}$:
 
-$$\int D\xi e^{x\sqrt{q} \xi } = e^{q x^2 } $$
+$$\int D\xi e^{x\sqrt{q} \xi } = e^{q \frac{x^2}{2} } $$
 Finally:
 
 \begin{align*}
 	&\hat{\mI}_w(\du{\hat{\tbf{Q}}}) = \displaystyle  \int D\xi \int \prod_{a=0}^n dw^a P_{w^a}(w^a) e^{-\displaystyle \[ 
 	(w^0)^\intercal \hat{Q}^0 w^0 + 2 \sum_{a=1}^n (w^0)^\intercal \hat{m}w^a +  \sum_{a=1}^n (w^a)^\intercal \hat{Q} w^a 
-	 \]} \exp \( - \sum_{a = 1}^N  \xi^\intercal \hat{q}^{1/2} w^a + \sum_{a=1}^n w^a \hat{q}w^a \)\\
-	 &= \displaystyle  \int_{\bbR} D\xi  \int_{\bbR}  d w^0 P_{w^0}(w^0) e^{-(w^0)^\intercal \hat{Q}^0_w w^0}  \[ \int_{\bbR}  d w P_w(w) \exp \( - \[ 2 w^0 \hat{m} w + w \( \hat{Q} + \hat{q}\) w - \xi \hat{q}^{1/2} w  \] \) \]^n \\
+	 \]} \exp \( - \frac{1}{2} \sum_{a = 1}^N  \xi^\intercal \hat{q}^{1/2} w^a + \sum_{a=1}^n w^a \hat{q}w^a \)\\
+	 &= \displaystyle  \int_{\bbR} D\xi  \int_{\bbR}  d w^0 P_{w^0}(w^0) e^{-(w^0)^\intercal \hat{Q}^0_w w^0}  \[ \int_{\bbR}  d w P_w(w) \exp \( - \[ 2 w^0 \hat{m} w + w \( \hat{Q} + \hat{q}\) w - \frac{1}{2} \xi \hat{q}^{1/2} w  \] \) \]^n \\
 \end{align*}
 
 

@@ -1,0 +1,713 @@
+
+\newpage
+\section{Replica computation}
+\label{sec:replicas}
+
+
+\subsection{Heuristic derivation}
+	
+	In this section, we present the heuristic derivation of the replica formula in the context of  of the \emph{committee machine}. This computation is necessary to properly guess the formula that can then be proven using the adaptive interpolation method.
+	 The reader interested in the replica approach to neural networks and the committee machine is invited to look as well to some of the classical papers \cite{gardner1988optimal,mezard1989space,schwarze1992generalization,schwarze1993generalization,schwarze1993learning,monasson1995learning}.\\
+	 
+	We present here the replica computation of the averaged free entropy $\Phi(\alpha)$ in \eq\eqref{free_entropy} for arbitrary \emph{student} prior and channel distributions $\rP_{\w},\rP_{\w^\star}$ and $\rP_{\out},\rP_{\out^\star}$, so that the computation remains valid for both the Bayes-optimal and mismatched settings.\\
+	
+
+	\subsubsection{Replica trick}
+	\label{sec:replict_rick}
+		The average in eq.~\eqref{free_entropy} is intractable in general, and the computation relies on the so called \emph{replica trick}, that consists in applying the identity  
+				\begin{align}
+					\EE_{\vec{y},\mat{X}} \[ \lim_{\ndim \to \infty} \frac{1}{\ndim} \log  \mZ_\ndim\(\vec{y}, \mat{X}\) \] =  \lim_{r \to 0} \[ \lim_{\ndim \to \infty}  \frac{1}{\ndim}  \frac{\partial \log \EE_{\vec{y},\mat{X}} \[  \mZ_\ndim\(\vec{y}, \mat{X}\)^r\] }{\partial r} \]\,.
+					\label{appendix:replica:committee:replica_trick}
+				\end{align}
+		The replica trick has been used in a series of previous works to compute the free energy density of GLM for separable distributions \cite{krzakala2012probabilistic} and has been rigorous proven in this case by \cite{barbier2017phase}.\\
+		
+		Eq.~\eqref{appendix:replica:committee:replica_trick} is interesting in the sense that it reduces the intractable average to the computation of the moments of the averaged partition function, which are easier quantities to compute. Note that for $r \in \bbN$, $\mZ_\ndim\(\vec{y}, \mat{X}\)^r = \prod_{a=1}^r \mZ_\ndim\(\vec{y}, \mat{X}\)$ represents the partition function of $r$ identical non-interacting copies of the initial system, called \emph{replicas}. Taking the quenched average over the disorder will then correlate the replicas, before taking the number of replicas $r\to 0$.	
+		Therefore, we assume there exists an analytical continuation so that $r\in \bbR$ and the limit is well defined. Finally, notice that we exchanged the order of the limits $r \to 0$ and $\ndim \to \infty$. These technicalities are crucial points but are not rigorously justified and we will ignore them in the rest of the computation.\\
+	
+		First, in order to decouple the contributions of the channel $\rP_\out$ and the prior $\rP_\w$, we introduce the variable $\mat{Z} = \frac{1}{\sqrt{\ndim}} \mat{X} \mat{W}$ and a Dirac-delta integral:
+			\begin{align}
+				\mZ_\ndim\(\vec{y}, \mat{X}\) &= \int_{\bbR^{\nsamples\times K}} \d\vec{z} ~ \rp_{\out}\(\vec{y} | \mat{Z} \) \int_{\bbR^{\ndim\times K}} \d\vec{w} ~ \rp_{\w}\(\mat{W}\) \delta\(\mat{Z} - \frac{1}{\sqrt{\ndim}} \mat{X} \mat{W}\)\,.
+			\end{align} 
+			Thus the replicated partition function for an integer $r\in \bbN$ in eq.~\eqref{appendix:replica:committee:replica_trick} can be  written as
+			\begin{align}
+			&\EE_{\vec{y},\mat{X}} \[  \mZ_\ndim\(\vec{y}, \mat{X}\)^r \] \nonumber \\
+			&=  \EE_{\vec{y},\mat{X}} \[  \prod_{a=1}^r \int_{\bbR^\nsamples} \d\mat{Z}^a ~ \rp_{\out^a}\(\vec{y} | \mat{Z}^a \) \right. \\
+			& \qquad \qquad \left. \times  \int_{\bbR^{\ndim \times K}} \d\mat{W}^a ~ \rp_{\w^a}\(\mat{W}^a\) \delta\(\mat{Z}^a - \frac{1}{\sqrt{\ndim}}\mat{X} \mat{W}^a\)\] \nonumber \\ 
+			&= \EE_{\mat{X}} \int_{\bbR^\nsamples} \d \vec{y} ~ \int_{\bbR^{\nsamples \times K}} \d\mat{Z}^\star ~ \rp_{\out^\star}\(\vec{y} | \mat{Z}^\star \)  \\
+			& \qquad \qquad \times  \int_{\bbR^{\ndim \times K}} \d\mat{W}^\star ~ \rp_{\w^\star}\(\mat{W}^\star\) \delta\(\mat{Z}^\star - \frac{1}{\sqrt{\ndim}}\mat{X} \mat{W}^\star\)\nonumber \\
+			& \times \[  \prod_{a=1}^r \int_{\bbR^{\nsamples \times K}} \d\mat{Z}^a ~ \rp_{\out^a}\(\vec{y} | \mat{Z}^a \) \int_{\bbR^{\ndim\times K}} \d\mat{W}^a ~ \rp_{\w^a}\(\mat{W}^a\) \delta\(\mat{Z}^a - \frac{1}{\sqrt{\ndim}}\mat{X} \mat{W}^a\)\]  \nonumber \\
+			&= \int_{\bbR^\nsamples} \d \vec{y} ~ \prod_{a=0}^r \int_{\bbR^{\nsamples \times K}} \d\mat{Z}^a ~ \rp_{\out^a}\(\vec{y} | \mat{Z}^a \) \int_{\bbR^{\ndim \times K}} \d\mat{W}^a ~ \rp_{\w^a}\(\mat{W}^a\) \\
+			& \qquad \qquad  \times \underbrace{\EE_{\mat{X}} \prod_{a=0}^r \delta\(\mat{Z}^a - \frac{1}{\sqrt{\ndim}}\mat{X} \mat{W}^a\)}_{(I)}\,. \nonumber
+			\end{align}
+			Note that the average over $\vec{y}$ is equivalent to the one over the ground truth vector $\mat{W}^\star$ in the case of a \emph{teacher-student}, which can be conveniently grouped with the other terms by just extending the replica indices and
+			considering it as a new replica $\mat{W}^0$ with index $a=0$, leading to a total of $r+1$ replicas. 
+			
+		%%%% Average %%%%
+	\subsubsection{Average over the i.i.d input data $\mat{X}$}	
+	\label{average_data}	
+			Remains to compute the average over $\mat{X}$ in the term $(I)$.
+			We suppose that inputs are drawn from an \iid distribution, for example a Gaussian $\rP_{\textrm{x}}(\vec{x}) = \mN_{\vec{x}}\(\vec{0},\mat{I}_\ndim\)$. More precisely, for $(i,j) \in \lb \ndim\rb^2$, $(\mu,\nu) \in \lb \nsamples \rb^2$, $\EE_\mat{X} \[ x_{\mu i} x_{\nu j} \] =  \delta_{\mu\nu} \delta_{ij}$. \\
+			By definition, the average in $(I)$ defines the probability density $\rp_{\z^a} (\mat{Z}^a)$ and as $\forall k \in \lb K \rb, \forall \mu \in \lb\nsamples \rb$, $z_{\mu k}^a =\frac{1}{\sqrt{\ndim}} \sum_{i=1}^\ndim x_{\mu i} w_{ik}^a$ is the sum of \iid random variables, the CLT insures that in the thermodynamic limit $\ndim \to \infty$, $z_{\mu k}^a$ follows a Gaussian multivariate distribution, with first moments given by:
+			\begin{align}
+					\EE_{\mat{X}}[z_{\mu k}^a] &= \frac{1}{\sqrt{\ndim}} \sum_{i=1}^\ndim \EE_{\mat{X}}\[x_{\mu i}\] w_{ik}^a = 0 \spacecase
+					\EE_{\mat{X}}[z_{\mu k}^a z_{\nu k'}^b] &= \frac{1}{\ndim} \sum_{ij} \EE_{\mat{X}}\[x_{\mu i} x_{\mu j}\] w_{ik}^a w_{jk'}^b  = \frac{1}{\ndim} \sum_{ij}  \delta_{ij} w_{ik}^a w_{jk'}^b \delta_{\mu \nu} \equiv \delta_{\mu \nu} ~ Q^{a k}_{b k'}. \nonumber
+			\end{align}
+			
+			Notice that averaging over the quenched disorder introduced correlations between replicas, which were initially independent, described by the symmetric \emph{overlap} matrix $\{ Q^{a k}_{b k'}\}_{kk'}$ of size $(r+1)K \times (r+1)K$.
+			This matrix order parameter measures the correlations between the replicated matrices $\{\mat{W}^a\}_{a=0}^r$ and is formally defined by
+			$$\mat{Q}(\{\mat{W}^a\}_{a=0}^r)\equiv\(\frac{1}{\ndim} \sum_{i=1}^{\ndim} w_{ik}^a w_{ik'}^b \)^{a,b=0..r}_{k,k'=1..K}\,,$$ 
+			such that $\forall (a,b) \in \lb 0 : r \rb^2 $, $\mat{Q}^{ab} \in \bbR^{K \times K}$. 
+			Therefore, again by the CLT, in the limit $d\to\infty$, the hidden variable $\mat{Z}^a \in \bbR^{\nsamples \times K}$ converges in distribution to the multivariate distribution
+			\begin{align}
+				\rP_{\z^a}\(\mat{Z}^a|\mat{Q}\) = \exp \left[- \frac{1}{2} \sum_{\mu =1}^\nsamples \sum_{a,b=0}^r \sum_{k,k'=1}^K z^{a}_{\mu k} z^b_{\mu k'}(\mat{Q}^{-1})_{k k'}^{ab} \right] / \( \det{2\pi \mat{Q}} \)^{\frac{\nsamples}{2}}\,.
+			\end{align}
+				
+			Inserting this back in the replicated partition function finally writes
+			
+			\begin{align}
+			&\EE_{\vec{y},\mat{X}} \[  \mZ_\ndim\(\vec{y}, \mat{X}\)^r \] = \nonumber \\
+			& \qquad \int_{\bbR^\nsamples} \d \vec{y} ~ \prod_{a=0}^r \int_{\bbR^{\nsamples \times K}} \d\mat{Z}^a ~ \rp_{\out^a}\(\vec{y} | \mat{Z}^a \) \rp_{\z^a}\(\mat{Z}^a|\mat{Q}\) \int_{\bbR^{\ndim \times K}} \d\mat{W}^a ~ \rp_{\w^a}\(\mat{W}^a\)
+			\end{align}
+						
+						
+	\subsubsection{Fourier representation}
+			Next we introduce the change of variable for the new order parameter $\mat{Q}^{ab}$ with a Dirac-$\delta$ distribution and its Fourier representation. For a variable $x \in \bbR$, the distribution $\delta(x)$ can be written as an integral over a purely imaginary parameter $\hat{x}$:
+			\begin{align*}
+				\delta\(x\) = \frac{1}{2 i\pi} \int_{i \bbR} \d \hat{x} e^{-\hat{x} x }\,.
+			\end{align*}
+			
+			 Applying the above identity to the change of variable, we obtain
+			 \begin{align}
+			 \begin{aligned}
+			 	&1 = \int_{\bbR^{(K \times r+1)^2 }} \d \mat{Q} \prod_{0 \leq a \leq b \leq r, 1 \leq k,k'\leq K} \delta \(\ndim Q^{ab}_{kk'}-\sum_{i=1}^\ndim w_{ik}^a w_{ik'}^b \)\\
+				&\propto \int \int_{\bbR^{(K \times r+1)^2}} \d \mat{Q} \d\hat{\mat{Q}} ~ \exp \( - \ndim \sum_{a=0}^r \sum_{k, k'}^K Q^{aa}_{k k'} \hat{Q}^{aa}_{k k'} - \frac{\ndim}{2} \sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'}  \) \\
+				&  \qquad \qquad \times \exp \(\sum_{a=0}^r \sum_{k, k'}^K  \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b}^r \sum_{k,k'}^K \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b\) \,,
+			\end{aligned}
+			\end{align} 
+			that involves a new ad-hoc purely imaginary matrix parameter $\hat{\mat{Q}} \in i\bbR^{(K \times (r+1))^2 }$.
+			Finally, multiplying the replicated partition function by $1$, using the Cauchy theorem and rotating the integration, it becomes an integral over the symmetric matrices $\mat{Q} \in \bbR^{(K \times r+1)^2}$ and $\hat{\mat{Q}} \in \bbR^{(K \times r+1)^2}$
+			 \begin{align*}       
+			  &\EE_{\vec{y},\mat{X}} \[  \mZ_\ndim\(\vec{y}, \mat{X}\)^r \] \\
+			  &= \int \int_{\bbR^{(K \times r+1)^2}} \d \mat{Q} \d\hat{\mat{Q}} ~ \exp \( - \ndim \sum_{a=0}^r \sum_{k,k'}^K Q^{aa}_{kk'} \hat{Q}^{aa}_{kk'} - \frac{\ndim}{2} \sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'}  \) \\
+			  & \qquad \qquad \times \exp \( \sum_{a=0}^r \sum_{k, k'}  \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b} \sum_{k, k'} \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b\)\\
+			  & \int_{\bbR^\nsamples} \d \vec{y}  \prod_{a=0}^r \int_{\bbR^{\nsamples \times K}} \d\mat{Z}^a ~ \rp_{\out^a}\(\vec{y} | \mat{Z}^a \) \rp_{\z^a}\(\mat{Z}^a | \mat{Q} \) \int_{\bbR^{\ndim \times K}} \d\mat{W}^a ~ \rp_{\w^a}\(\mat{W}^a\) \\
+			  &= \int \int_{\bbR^{(K \times r+1)^2}} \d \mat{Q} \d\hat{\mat{Q}} ~ \exp \( - \ndim \sum_{a=0}^r \sum_{k, k'}^K Q^{aa}_{kk'} \hat{Q}^{aa}_{kk'} - \frac{\ndim}{2} \sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'}  \) \\
+			  & \qquad \qquad \times \exp \( \sum_{a=0}^r \sum_{k, k'}^K  \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b}^r \sum_{k,k'}^K \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b\)\\
+			  &  \[\int_\bbR \d y  \prod_{a=0}^r \int_{\bbR^{K}} \d\vec{z}^a ~ \rp_{\out^a}\(y | \vec{z}^a \) \rp_{\z^a}\(\vec{z}^a | \mat{Q} \)\]^\nsamples \[\prod_{a=0}^r \int_{\bbR^{K}} \d\vec{w}^a ~ \rp_{\w^a}\(\vec{w}^a\)\]^{\ndim} \\
+			  &\simeq  \int \int_{\bbR^{(K \times r+1)^2}} \d \mat{Q} \d\hat{\mat{Q}} ~ e^{\ndim \Phi^{(r)} (\mat{Q},\hat{\mat{Q}} )} \,,
+			\end{align*}    
+			where in the last step, we used a Laplace method \cite{Rong89} and omitted the sub-leading factors in the thermodynamic limit $\ndim \to \infty$ to evaluate it as a function of the free entropy potential defined by
+			\begin{align}
+			\begin{aligned}
+				\Phi^{(r)} (\mat{Q},\hat{\mat{Q}}) &\equiv  - \sum_{a=0}^r \sum_{k, k'}^K Q^{a a}_{k k'} \hat{Q}^{a a}_{k k'} -\frac{1}{2}\sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'} \\
+				&+ \log \Psi_{\w}^{(r)} (\hat{\mat{Q}})  + \alpha \log \Psi_{\out}^{(r)}(\mat{Q})\,,
+			      \spacecase
+			      \Psi_{\w}^{(r)} (\hat{\mat{Q}}) &\equiv \displaystyle \prod_{a=0}^r \int_{\bbR^{K}} \d \vec{w}^a ~ 
+			      \rp_{\w^a}\(\vec{w}^a\) \\
+			      & \hhspace \times \exp \( \sum_{a=0}^r \sum_{k k'}^{K}  \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b}^r \sum_{k,k'}^{K} \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b\)\,, \spacecase
+			      \Psi_{\out}^{(r)}(\mat{Q}) &\equiv \displaystyle \prod_{a=0}^r  \int_\bbR \d y \int_{\bbR^{K}}  \d \vec{z}^a ~ \rp_{\out^a}\(y | \vec{z}^a\) \rp_{\z^a}\(\vec{z}^a | \mat{Q}\)\,,
+			\end{aligned}
+			    \label{appendix:intro:replicas:Phi_r}
+			\end{align}
+			and where we decoupled the variable $\Z^a \in \bbR^{\nsamples \times K}$ and $\mW^a \in \bbR^{\ndim \times K}$ along the rows
+			\begin{align*}
+				\rp_{\out^a}\(\vec{y} | \mat{Z}^a \) &= \displaystyle \prod_{\mu=1}^\nsamples \rp_{\out^a}\(y_\mu | \vec{z}^a_\mu \)\,, \text{ with } \vec{z}^a_\mu \in \bbR^{K}\,, \\
+				\rp_{\z^a} (\mat{Z}^a| \mat{Q}) &= \displaystyle \prod_{\mu=1}^\nsamples \rp(\vec{z}^a_\mu | \mat{Q})\,, \\
+				\rp_{\w^a}\(\mat{W}^a\) &= \displaystyle \prod_{i=1}^\ndim \rp_{\w^a}\( \vec{w}^a_i \)\,, \text{ with } \vec{w}^a_i \in \bbR^{K}\,,\\
+				\rp_{\z^a}\(\vec{z}^a | \mat{Q}\) &= \exp \left[- \frac{1}{2} \sum_{a,b=0}^r \sum_{k,k'=1}^K z^{a}_{k} z^b_{k'}(\mat{Q}^{-1})_{k k'}^{ab} \right] / \( \det{2\pi \mat{Q}} \)^{\frac{1}{2}}\,.
+			\end{align*}
+			Note that the averaged replicated partition function of this fully connected model can be expressed as a saddle point equation only because distributions $\rP_{\out},\rP_{\out^\star}$ and $\rP_\w,\rP_{\w^\star}$ are separable so that a pre-factor scaling with the system size $\ndim$ dominates the exponential distribution.
+			Finally, switching the two limits $r\to 0$ and $\ndim \to \infty$, the quenched free entropy $\Phi$ simplifies as a saddle point equation
+			\begin{equation}
+				\Phi (\alpha) = \extr_{ \mat{Q}, \hat{\mat{Q}} } \left\{\lim_{r\rightarrow 0} \frac{\partial \Phi^{(r)}(\mat{Q},\hat{\mat{Q}})}{\partial  r} \right\}\,,
+			\end{equation}
+			over symmetric matrices $\mat{Q}\in \bbR^{(K \times r+1)^2}$ and $\hat{\mat{Q}} \in \bbR^{(K \times r+1)^2}$.\\
+			 
+			To summarize, we managed to get rid of the original high-dimensional integrals and replace them by an optimization in the space of matrices, which, in this form, is still intractable. We not only have to search in the space of $(r+1)\times (r+1)$ matrices to find the extremiser of $\Phi^{(r)}$, but we also need to compute the limit $r\to 0^{+}$.
+			In the following we will assume a simple Ansatz for these matrices in order to first obtain an analytic expression in $r$ before taking the derivative with respect to $r$.
+
+		\subsection{Replica Symmetric free entropy}
+		\label{rs_free_entropy}			
+			Our goal is to express the functional $\Phi^{(r)}(\mat{Q},\hat{\mat{Q}})$ appearing in the free entropy as an analytical function of $r$, in order to perform the replica trick. 
+			
+			\subsubsection{Replica symmetric ansatz}
+			To do so, we will assume that the extremum of $\Phi^{(r)}$ is attained at a point in $\mat{Q},\hat{\mat{Q}}$ space such that a \emph{replica symmetry} property is verified. More concretely, we assume: 
+			\begin{align}
+			\begin{aligned}
+			\exists \mat{Q} \in \bbR^{K \times K} \text{ s.t } \quad \forall a \in \lb 0 : r \rb \quad \forall (k,k') \in \lb K \rb^2 \quad Q^{a a}_{k k'} &= Q_{k k'}\,,\\
+			\exists \mat{Q}^\star \in \bbR^{K \times K} \text{ s.t } \quad \forall (k,k') \in \lb K \rb^2 \quad Q^{0 0}_{k k'} &= Q^\star_{k k'}\,,\\
+			\exists \mat{q} \in \bbR^{K \times K} \text{ s.t } \quad \forall (a < b) \in \lb 0 : r \rb^2 \quad \forall (k,k') \in \lb K \rb^2 \quad Q^{a b}_{k k'} &= q_{k k'}\,,\\
+			\exists \mat{m} \in \bbR^{K \times K} \text{ s.t } \quad \forall a \in \lb 0 : r\rb \quad \forall (k,k') \in \lb K \rb^2 \quad Q^{0 a}_{k k'} &= m_{k k'}\,,
+			\end{aligned}
+			\end{align}
+			and similarly for the ad-hoc parameter
+			\begin{align}
+			\begin{aligned}
+			\exists \hat{\mat{Q}} \in \bbR^{K \times K} \text{ s.t } \quad \forall a \in \lb 0 : r \rb \quad \forall (k,k') \in \lb K \rb^2 \quad \hat{Q}^{a a}_{k k'} &= -\frac{1}{2} \hat{Q}_{k k'}\,,\\
+			\exists \hat{\mat{Q}}^\star \in \bbR^{K \times K} \text{ s.t } \quad \forall (k,k') \in \lb K \rb^2 \quad \hat{Q}^{0 0}_{k k'} &= \hat{Q}^\star_{k k'}\,, \\
+			\exists \hat{\mat{q}} \in \bbR^{K \times K} \text{ s.t } \quad \forall (a < b) \in \lb 0 : r \rb^2 \quad \forall (k,k') \in \lb K \rb^2 \quad \hat{Q}^{a b}_{k k'} &= \hat{q}_{k k'}\,, \\
+			\exists \hat{\mat{m}} \in \bbR^{K \times K} \text{ s.t } \quad \forall a \in \lb 0 : r \rb \quad \forall (k,k') \in \lb K \rb^2 \quad \hat{Q}^{0 a}_{k k'} &= \hat{m}_{k k'}\,.
+			\end{aligned}\
+			\end{align} 
+			The factor $-\frac{1}{2}$ is not necessary bu useful to recover commonly used formulations.
+			This Ansatz can be represented by symmetric RS matrices $\mat{Q}^{(\rs)} \in \bbR^{(K \times r+1)^2}$ and $\hat{\mat{Q}}^{(\rs)} \in \bbR^{(K \times r+1)^2}$
+			\begin{equation}
+			\begin{aligned}[c]
+			\mat{Q}^{(\rs)} = \scalemath{0.95}{\begin{pmatrix} 
+			\mat{Q}^\star & \mat{m} & \cdots & \mat{m} \\
+			\mat{m}^\intercal  & \mat{Q}  & \mat{q} & ...  \\
+			\vdots & \mat{q} & \ddots & \mat{q}   \\
+			\mat{m}^\intercal  &... & \mat{q}  & \mat{Q}     \\
+			\end{pmatrix}}
+			\end{aligned}
+			\hspace{0.2cm}
+			\textrm{and} 
+			\hspace{0.2cm}
+			\begin{aligned}[c]
+			\hat{\mat{Q}}^{(\rs)}=\scalemath{0.9}{\begin{pmatrix} 
+			 \hat{\mat{Q}}^\star & \hat{\mat{m}} & ... & \hat{\mat{m}}\\
+			\hat{\mat{m}}^\intercal &-\frac{1}{2}\hat{\mat{Q}} & \hat{\mat{q}} & ...  \\
+			 \vdots & \hat{\mat{q}} & \ddots & \hat{\mat{q}}  \\
+			\hat{\mat{m}}^\intercal &... & \hat{\mat{q}} & -\frac{1}{2}\hat{\mat{Q}}\\  
+			\end{pmatrix}}\,,
+			\end{aligned}
+			\end{equation}
+			where the \emph{overlap} parameters may be reinterpreted as the scalar product between the replicas
+			\begin{align*}
+				\forall (a,b) \in \lb r \rb^2,~ \mat{q} = \frac{1}{\ndim} \mat{W}^{a \intercal} \mat{W}^{b}\,,
+			\end{align*}
+			the self-overlap of each replica
+			\begin{align*}
+				\forall a \in \lb r \rb,~ \mat{Q} = \frac{1}{\ndim} \mat{W}^{a \intercal} \mat{W}^{a}\,,
+			\end{align*}
+			the scalar product with the ground truth
+			\begin{align*}
+				\forall a \in \lb r \rb,~ \vec{m} = \frac{1}{\ndim} \mat{W}^{\star \intercal} \mat{W}^{a}\,,
+			\end{align*}
+			and the second moment of the ground truth distribution
+			\begin{align*}
+				\mat{Q}^\star = \frac{1}{\ndim} \mat{W}^{\star \intercal} \mat{W}^{\star}\,.
+			\end{align*}
+			The above Ansatz simplifies in the scalar GLM case with $K=1$ to
+			$q = \frac{1}{\ndim} \vec{w}^a \cdot \vec{w}^b$ for $a \ne b$, a norm $Q= \frac{1}{\ndim} \|\vec{w}^a\|_2^2$, an overlap with the ground truth $m =\frac{1}{\ndim} \vec{w}^a \cdot \vec{w}^\star$ and a second moment $Q^\star= \frac{1}{\ndim} \|\vec{w}^\star\|_2^2$.\\
+		
+		\subsubsection{Decomposition of the free entropy functional}
+			Let's compute separately the terms involved in the functional $\Phi^{(r)}(\mat{Q},\hat{\mat{Q}})$ in \eqref{appendix:intro:replicas:Phi_r} by applying this Ansatz: the first is a trace term, the second term $\Psi_{\w}^{(r)}$ depends on the prior distributions $\rP_\w$, $\rP_{\w^\star}$ and finally the third term $\Psi_{\out}^{(r)}$ depends on the channel distributions $\rP_{\out^\star}$, $\rP_\out$.
+						
+		\paragraph{Trace term} 
+				The trace term in \eqref{appendix:intro:replicas:Phi_r} can be easily computed at the RS fixed point and takes the following form
+				\begin{align}
+				\begin{aligned}
+					&\left. - \sum_{a=0}^r \sum_{k, k'}^K Q^{a a}_{k k'} \hat{Q}^{a a}_{k k'} -\frac{1}{2}\sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'} \right|_{\rs} \\
+					&= - \tr{\mat{Q}^\star \hat{\mat{Q}}^\star} + \frac{1}{2} r \tr{\mat{Q} \hat{\mat{Q}}} -  r \tr{\mat{m} \hat{\mat{m}}}  - \frac{r(r-1)}{2} \tr{\mat{q} \hat{\mat{q}}}\,,
+				\end{aligned}
+				\end{align}
+				and taking the derivative and the limit $r\to 0$ we obtain
+				\begin{align}
+				\begin{aligned}
+					&\lim_{r \to 0} \partial_r \( \left. - \sum_{a=0}^r \sum_{k, k'}^K Q^{a a}_{k k'} \hat{Q}^{a a}_{k k'} -\frac{1}{2}\sum_{a \neq b}^r \sum_{k, k'}^K Q^{a b}_{k k'} \hat{Q}^{a b}_{k k'} \)\right|_{\rs} \\
+					&  \qquad \qquad = \frac{1}{2} \tr{\mat{Q} \hat{\mat{Q}}} -  \tr{\mat{m} \hat{\mat{m}}}  + \frac{1}{2} \tr{\mat{q} \hat{\mat{q}}}
+					\label{appendix:replicas:committee:trace} 
+				\end{aligned}
+				\end{align}
+			
+			\paragraph{Prior integral $\Psi_{\w}^{(r)}$} Evaluated at the RS fixed point the quadratic form reads			      
+				\begin{align*}
+					&\sum_{a=0}^r \sum_{k k'}  \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b} \sum_{k,k'} \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b\\
+					&= \vec{w}^{\star \intercal} \hat{\mat{Q}}^\star \vec{w}^{\star} + \sum_{a=1}^r \vec{w}^{\star \intercal} \hat{\mat{m}} \vec{w}^a - \frac{1}{2} \sum_{a=1}^r  \vec{w}^{a \intercal} \hat{\mat{Q}} \vec{w}^{a} + \frac{1}{2} \sum_{1 \leq a \ne b \leq r}  \vec{w}^{a \intercal} \hat{\mat{q}} \vec{w}^{b} \\
+					&= \vec{w}^{\star \intercal} \hat{\mat{Q}}^\star \vec{w}^{\star} + \sum_{a=1}^r \vec{w}^{\star \intercal} \hat{\mat{m}} \vec{w}^a - \frac{1}{2} \sum_{a=1}^r  \vec{w}^{a \intercal} \(\hat{\mat{Q}} + \hat{\mat{q}} \) \vec{w}^{a} + \frac{1}{2} \(\sum_{a=1}^r  \vec{w}^{a} \)^\intercal \hat{\mat{q}} \(\sum_{a=1}^r  \vec{w}^{a} \)\,.
+				\end{align*}
+				
+				Using a Hubbard-Stratonovich transformation:
+				\begin{proposition}[Hubbard-Stratonovich transformation]
+				\label{prop:hubbard}
+					 For $\bxi \sim \mN\(\vec{0},\rI_\ndim\)$ and a symmetric positive definite matrix $\mat{A} \in \bbR^{\ndim \times \ndim}$, for all $\vec{x} \in \bbR^{\ndim}$
+					 \begin{align}
+					\EE_{\bxi}\exp\(  \bxi^\intercal \mat{A}^{1/2} \vec{x} \) = \(2\pi\)^{-\ndim/2} \int_{\bbR^\ndim} \d \bxi e^{-\frac{1}{2} \vec{x}^\intercal \vec{x} + \bxi^\intercal \mat{A}^{1/2} \vec{x} } = e^{\frac{1}{2} \vec{x}^\intercal \mat{A} \vec{x} }\,,
+					\end{align}
+				\end{proposition}
+				
+				the prior integral can be further simplified 
+				
+				\begin{align}
+				\begin{aligned}
+					&\left.\Psi_{\w}^{(r)} (\hat{\mat{Q}})\right|_{\rs} = \displaystyle \int_{\bbR^{(r+1) \times K}} \d \mat{W} ~ 
+			        \rp_{\w}\(\mat{W}\) e^{\sum_{a=0}^r \sum_{k, k'} ^K \hat{Q}^{a a}_{k k'} w_k^a w_{k'}^a  + \frac{1}{2} \sum_{a \neq b} \sum_{k,k'}^K \hat{Q}^{a b}_{k k'} w_k^a w_{k'}^b} \\
+					&= \EE_{\bxi, \vec{w}^\star \sim \rP_{\w^\star}} \[ e^{\vec{w}^{\star \intercal} \hat{\mat{Q}}^\star \vec{w}^{\star} } \EE_{\vec{w} \sim \rP_{\w}} \[ e^{\( \vec{w}^\intercal \hat{\vec{m}} \vec{w}^\star  - \frac{1}{2}\vec{w}^\intercal  (\hat{\mat{Q}} + \hat{\mat{q}}) \vec{w} + \vec{w}^\intercal \hat{\mat{q}}^{1/2} \bxi \) } \]^r   \]\,.
+				\end{aligned}
+				\label{appendix:replicas:committee:Psi_w_rs}
+				\end{align}
+				
+			\paragraph{Detailed computation of $\(\mat{Q}^{(\rs)}\)^{-1}$}
+				Let us focus on the matrix $\mat{Q}^{(\rs)}$ involved in the expression of $\Psi_{\out}^{(r)}$ in \eqref{appendix:intro:replicas:Phi_r}.
+				Given the replica symmetric ansatz, we must compute the determinant and inverse matrix of the matrix $\bSigma \equiv \mat{Q}^{(\rs)}$.
+				
+				We use tensor products notations $\otimes$ for matrices living in $\bbR^{ r \times r } \otimes  \bbR^{ K \times K }$. Let us recall some basic properties of the tensor product of two matrices $\mat{A} \in \bbR^{r \times r}$ and $\mat{B} \in \bbR^{K \times K}$:
+			\begin{align}
+				(\mat{A} \otimes \mat{B})^{-1} &= \mat{A}^{-1} \otimes \mat{B}^{-1} \\
+				\det{\mat{A} \otimes \mat{B}} &= \det{\mat{A}}^K \det{\mat{B}}^r \\
+				\forall \mat{C}, \mat{D} \quad (\mat{C} \otimes \mat{D}) (\mat{A} \otimes \mat{B}) &= (\mat{C} \mat{A}) \otimes (\mat{D} \mat{B}) \\
+				\text{Sp}(\mat{A} \otimes \mat{B}) &= \{\lambda_i \mu_j \quad  / \lambda_i \in \text{Sp}(\mat{A}),\mu_j\in \text{Sp}(\mat{B}) \}
+			\end{align}
+			
+			Next we denote the \emph{reduced} matrix 
+			\begin{align}
+				\bSigma_r \equiv \begin{pmatrix}
+				 \mat{Q} & \mat{q} & \cdots & \mat{q} \\
+				 \mat{q} & \mat{Q} & \cdots & \mat{q} \\
+				 \vdots & \vdots & \ddots & \vdots \\
+				 \mat{q} & \mat{q} & \cdots & \mat{Q} \\
+				\end{pmatrix} =  \mat{I}_r \otimes (\mat{Q} - \mat{q}) + \mat{J}_r \otimes \mat{q}\,,
+			\end{align}
+			where $\mat{J}_r$ is the rank-1 matrix with all elements equal to 1. Finally, some basic linear algebra formulas allow us to reduce the problem of computing $\det{\bSigma}$ and $\bSigma^{-1}$ to those of $\bSigma_r$. 
+			
+		\paragraph{Calculation of $\mat{S}$} 
+			We define the $K \times K$ matrix :
+			\begin{align}
+				\mat{S} \equiv \mat{Q}^\star - (\vec{1}_r^\intercal
+				\otimes \mat{m}) \bSigma_r^{-1} (\vec{1}_r
+				\otimes \mat{m}^\intercal)  
+			\end{align}
+			
+			Let us compute $\mat{S}$: 
+			\begin{align}
+				\begin{aligned}
+				\mat{S} &\equiv \mat{Q}^\star - (\vec{1}_r^\intercal
+				\otimes \mat{m}) \bSigma_r^{-1} (\vec{1}_r
+				\otimes \mat{m}^\intercal)   \nonumber \\
+				&= \mat{Q}^\star - r \mat{m} (\mat{Q} - \mat{q})^{-1} \mat{m}^\intercal + r^2 \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{q} (\mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \nonumber \\
+				&= \mat{Q}^\star - r \mat{m}  \(\mat{I}_K - n (\mat{Q} + (r-1)\mat{q})^{-1}  \mat{q} \)(\mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \nonumber \\
+				&= \mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \(\mat{Q} + (r-1)\mat{q} - r  \mat{q} \) (\mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \nonumber \\
+				&= \mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal
+				\end{aligned}
+			\end{align}
+				
+		\paragraph{Calculation of $\bSigma_r^{-1}$}
+			
+			$\bSigma_r$ can be easily analyzed, thanks to a slight generalization of the Sherman-Morrison formula.
+			\begin{align}
+				\bSigma_r =  \mat{I}_r \otimes (\mat{Q} - \mat{q}) + \mat{J}_r \otimes \mat{q} =  \mat{I}_r \otimes (\mat{Q} - \mat{q}) + \vec{1}_r \vec{1}_r^\intercal \otimes  \bq
+			\end{align}
+			So that the determinant reads
+			\begin{align}
+				\det{\bSigma_r} &= \det{\mat{Q} - \mat{q}}^r \det{\mat{I}_K + ( \vec{1}^\intercal \otimes \mat{q}) (\mat{I}_r \otimes (\mat{Q} - \mat{q}))^{-1} (\vec{1} \otimes \mat{I}_K)} \nonumber \\
+				&= \det{\mat{Q} - \mat{q}}^r \det{ \mat{I}_K + r \bq (\mat{Q} - \mat{q})^{-1} } \nonumber \\
+				\det{\bSigma_r} &=  \det{\mat{Q} - \mat{q}}^{r-1} \det{\mat{Q} + (r-1)\mat{q} }\,,
+			\end{align}
+			
+			and the inverse 
+			\begin{align}
+			\bSigma_r^{-1} &= \mat{I}_r \otimes (\mat{Q} - \mat{q})^{-1} \\
+			& - \(\mat{I}_r \otimes (\mat{Q} - \mat{q})^{-1}\) \( \vec{1}_r \otimes \mat{I}_K \) \( \mat{I}_K + r \mat{q} (\mat{Q} - \mat{q})^{-1}\)^{-1} \( \vec{1}_r^\intercal \otimes \mat{q} \) \(\mat{I}_r \otimes (\mat{Q} - \mat{q})^{-1}\) \nonumber \\
+			&=  \mat{I}_r \otimes (\mat{Q} - \mat{q})^{-1} - \mat{J}_r \otimes \((\mat{Q} + (r-1)\mat{q})^{-1} \mat{q} (\mat{Q} - \mat{q})^{-1}\)
+			\end{align}
+			
+		
+		\paragraph{Determinant of $\mat{Q}^{(\rs)}$}
+			Therefore we obtain:
+			\begin{align}
+				\begin{aligned}
+				\det{\bSigma} &= \det{\mat{Q}^{(\rs)}}=  \det{\bSigma_r} \det{\mat{S}}\\
+					&=\det{\mat{Q} - \mat{q}}^{r-1} \det{\bQ + (r-1)\mat{q}} \det{\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal}
+				\end{aligned}
+				\label{det_rs}
+			\end{align}
+		
+		\paragraph{Inverse of $\mat{Q}^{(\rs)}$}
+			The inverse of the block matrix reads:
+			\begin{align*}
+				\bSigma^{-1} &= \begin{pmatrix}
+					\mat{S}^{-1} & - \mat{S}^{-1} (\vec{1}_r^\intercal
+					\otimes \mat{m})  \bSigma_r^{-1} \\
+					- \bSigma_r^{-1} (\vec{1}_r
+					\otimes \mat{m}^\intercal)   \mat{S}^{-1} & \bSigma_{r}^{-1} + \bSigma_{r}^{-1} (\vec{1}_r
+					\otimes \mat{m}^\intercal) \mat{S}^{-1} (\vec{1}_r^\intercal
+					\otimes \mat{m}) \bSigma_{r}^{-1}
+					\end{pmatrix} 
+			\end{align*}
+			
+			where each block can be computed separately. The top diagonal simply reads
+			\begin{align*}
+				\mat{S} ^{-1} &= \(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\)^{-1}
+			\end{align*}		
+			and the off-diagonal blocks read:
+			\begin{align}
+			& - \bSigma_r^{-1} (\vec{1}_r
+			\otimes \mat{m}^\intercal)  \mat{S}^{-1} =\\
+			&\quad - \vec{1} \otimes \(\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\)^{-1} \) \nonumber \\
+			& - \mat{S}^{-1} (\vec{1}_r^\intercal
+			\otimes \mat{m})  \bSigma_r^{-1} =\\
+			& \quad  - \vec{1}_r^\intercal
+			\otimes \(\(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\)^{-1}  \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \)]  \nonumber
+			\end{align}
+			
+			The bottom diagonal block is a bit more involved : 
+			\begin{align}
+				\bSigma_{r}^{-1} &+ \bSigma_{r}^{-1} (\vec{1}_r
+				\otimes \mat{m}^\intercal) \mat{S}^{-1} ( \vec{1}_r^\intercal
+				\otimes \mat{m}) \bSigma_{r}^{-1} \nonumber \\
+				&= \mat{I}_r \otimes (\mat{Q} - \mat{q})^{-1} - \mat{J}_r \otimes \mat{A}
+			\end{align}
+			with 
+			\begin{align}
+				\mat{A} &\equiv (\mat{Q} + (r-1)\mat{q})^{-1} \mat{q} (\mat{Q} - \mat{q})^{-1} \\
+				& - (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1)\mat{q})^{-1} \mat{m}^\intercal\)^{-1}\mat{m} (\mat{Q} + (r-1)\mat{q})^{-1}	\nonumber
+			\end{align}
+
+			Finally we observe that $\bSigma^{-1}$ is also a block matrix of the form 
+			\begin{equation}
+				   \bSigma^{-1} = \(\mat{Q}^{(\rs)}\)^{-1}=\begin{bmatrix}
+				   \td{\mat{Q}}^\star & \td{\mat{m}} & \cdots & \td{\mat{m}}  \\
+				   \td{\mat{m}}^\intercal & \td{\mat{Q}} & \td{\mat{q}} & \cdots \\
+				   \vdots & \td{\mat{q}} & \ddots & \td{\mat{q}} \\
+				   \td{\mat{m}}^\intercal & \cdots & \td{\mat{q}} & \td{\mat{Q}} \\
+				  \end{bmatrix}
+			\end{equation}
+			with 
+			\begin{align*}
+				&\td{\mat{Q}}^\star = \(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1) \mat{q})^{-1} \mat{m}^\intercal \)^{-1}   \spacecase
+				&\td{\mat{m}} = -\(\mat{Q}^\star - r \mat{m} (\mat{Q} + (r-1) \mat{q})^{-1} \mat{m}^\intercal \)^{-1} \mat{m} ( \mat{Q} + (r-1) \mat{q})^{-1}  \spacecase
+				&\td{\mat{Q}} = (\mat{Q}-\mat{q})^{-1} - (\mat{Q} +(r-1) \mat{q})^{-1} \mat{q} (\mat{Q}-\mat{q})^{-1} \\
+				& \qquad  + ( \mat{Q} + (r-1) \mat{q} )^{-1} \mat{m}^\intercal \\ 
+				& \qquad \qquad \times \(\mat{Q}^\star - r \mat{m} ( \mat{Q} + (r-1) \mat{q})^{-1} \mat{m}^\intercal \)^{-1} \mat{m} ( \mat{Q} + (r-1)\mat{q})^{-1}\spacecase
+				&\td{\mat{q}} = \td{\mat{Q}} - (\mat{Q}-\mat{q})^{-1}
+			\end{align*}
+									
+			\paragraph{Channel integral $\Psi_{\out}^{(r)}$}
+				The quadratic form in $\rp_{\z^a}(\mat{z}^a | \mat{Q}^{(\rs)}$ reads				
+				\begin{align*}
+					&- \frac{1}{2} \sum_{a,b} \sum_{k,k'} z^{a}_{k} z^b_{k'}(\mat{Q}^{-1})_{k k'}^{ab} \\
+					&= -\frac{1}{2} \vec{z}^{\star \intercal} \td{\mat{Q}}^\star \vec{z} 
+					-\sum\limits_{a=1}^{r} \vec{z}^{\star \intercal} \td{\mat{m}} \vec{z}^{a}\\
+					&
+					\qquad \qquad  -\frac{1}{2}\sum\limits_{a=1}^{r} \vec{z}^{a \intercal} \( \td{\mat{Q}} - \td{\mat{q}} \) \vec{z}^{a}
+					-\frac{1}{2} \(\sum\limits_{a}^{r} \vec{z}^{a}\)^\intercal \td{\mat{q}} \(\sum\limits_{a}^{r} \vec{z}^{a}\) \,,
+				\end{align*}
+				and using another Gaussian transformation, see Prop.~\ref{prop:hubbard}, we finally obtain
+				\begin{align}
+				&\left. \Psi_{\out}^{(r)}(\mat{Q}) \right|_{\rs} =  \displaystyle \int \d y \int_{\bbR^{(r+1) \times K}}  \d \mat{Z} ~ 
+			      \rp_{\out}\(y | \mat{Z}\) \rp\(\mat{Z} | \mat{Q}\) \nonumber \\
+			      &= \displaystyle \int \d y \int_{\bbR^{(r+1) \times K}}  \d \mat{Z} 
+			      \rp_{\out}\(y | \mat{Z}\) e^{- \frac{1}{2} \sum_{a,b=0}^r \sum_{k,k'=1}^K z^{a}_{k} z^b_{k'}(\mat{Q}^{-1})_{k k'}^{ab} } / \( \det{2\pi \mat{Q}}^{(\rs)} \)^{\frac{1}{2}}
+				\nonumber \\
+				&= \int \d y ~ \EE_{\bxi} \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^{(\rs)}} )} \times \int \d \vec{z}^\star ~ \rp_{\out^\star}\(y | \vec{z}^\star \) e^{ -\frac{1}{2} \vec{z}^{\star \intercal} \td{\mat{Q}}^\star \vec{z}^\star} \label{Psi_out_rs} \\ 
+				& \times\[ \int \d \vec{z} ~ \rp_{\out}\(y | \vec{z}\) \exp\( - \vec{z}^{\star \intercal} \td{\mat{m}} \vec{z} - \frac{1}{2} \vec{z}^\intercal \( \td{\mat{Q}} - \td{\mat{q}} \) \vec{z}  + \vec{z}^\intercal (-\td{\mat{q}})^{1/2} \bxi\) \]^r\,, \nonumber
+				\end{align}
+				with $\det{\mat{Q}^{(\rs)}}$ given by \eqref{det_rs}.
+			
+		\subsubsection{Consistency conditions $r\to 0$: $\Theta(1)$ terms}
+			It remains to take the limit $r \to 0^+$ of the expressions for $\Psi_{\w}^{(r)}$ and $\Psi_{\out}^{(r)}$ that are now analytical in $r$.
+			%
+			First, our assumptions must be consistent and thus we need to check the consistency conditions in the limit $r \to 0$. Indeed, if $\Phi^{(r)}$ is finite we could obtain divergence taking the limit $\lim_{r \to 0} \frac{1}{r} \Phi^{(r)} = \infty$. Therefore to avoid such divergence, we must at least impose that $\lim_{r \to 0} \Phi^{(r)} = 0$:			  
+			\begin{align*}
+				\lim_{r\to 0} \Phi^{(r)} (\mat{Q},\hat{\mat{Q}}) &= - \tr{\mat{Q}^\star \hat{\mat{Q}}^\star} +\log \Psi_{\w}^{0} (\hat{\mat{Q}}^\star)+\alpha \log \Psi_{\out}^{0}(\mat{Q}^\star)
+			\end{align*}	
+			with 
+			\begin{align*}
+				\Psi_{\w}^{0} (\hat{\mat{Q}}^\star) &\equiv \EE_{\vec{w}^\star} \exp\( \vec{w}^{\star \intercal}  \hat{\mat{Q}}^\star \vec{w}^{\star}\)\,, \spacecase 
+				\Psi_{\out}^{0}(\mat{Q}^\star) &\equiv \int_\bbR \d y ~  \int \d \vec{z}^\star ~ \rp_{\out^\star}\(y | \vec{z}^\star \) \mN_{\vec{z}^\star}\(\vec{0}, \mat{Q}^\star \)  = 1 \,.
+			\end{align*}		
+			Taking the saddle point equations over $\mat{Q}^\star$ and $\hat{\mat{Q}}^\star$, imposing the consistency condition $\lim_{r\to 0} \Phi^{(r)} (\mat{Q},\hat{\mat{Q}}) = 0$, we finally obtain
+			\begin{align}
+				\hat{\mat{Q}}^\star = \mat{0} \andcase \mat{Q}^\star = \EE_{\vec{w}^\star}\[ \vec{w}^{\star \intercal} \vec{w}^{\star} \]\,.
+				\label{appendix:replicas:committee:consistency}
+			\end{align}
+			
+		\subsubsection{Replica trick $r \to 0$ limit: $\Theta(r)$ terms}
+			Imposing the conditions \eqref{appendix:replicas:committee:consistency} avoids divergence in the replica trick, and we can therefore proceed with the $\Theta(r)$ terms.  
+				
+		\paragraph{Prior integral $\Psi_{\w}^{(r)}$}
+			The limit $r\to 0$ and the derivative of the logarithm of the prior integral \eqref{appendix:replicas:committee:Psi_w_rs} can be trivially computed
+			\begin{align*}
+			&\lim_{r \to 0} \partial_r \left. \log \Psi_{\w}^{(r)} (\hat{\mat{Q}})\right|_{\rs} \\
+			&= \EE_{\bxi, \vec{w}^\star} \\
+			& \times \log \[ \EE_{\vec{w}}  \exp \(\[  \vec{w}^{\star \intercal} \hat{\mat{m}} \vec{w} - \frac{1}{2} \vec{w}^\intercal (\hat{\mat{Q}} + \hat{\mat{q}}) \vec{w} + \bxi^\intercal \hat{\mat{q}}^{1/2}  \vec{w} \] \) \]\,,
+			\end{align*}	
+			with $\bxi \sim \mN(\vec{0},\mat{I}_K)$ and $\vec{w}^\star \sim \rP_{\w^\star}$. 
+			To conclude, we can symmetrize and decouple the \emph{teacher} and \emph{student} expectations $\EE_{\vec{w}^\star},\EE_{\vec{w}}$. By performing the change of variable $\bxi \leftarrow \bxi + \hat{\mat{q}}^{-1/2} \hat{\mat{m}} \vec{w}^\star$. We finally obtain		
+			\begin{align}
+			&\lim_{r \to 0} \partial_r \left. \log \Psi_{\w}^{(r)} (\hat{\mat{Q}})\right|_{\rs} \nonumber \\ 
+			&=  \EE_{\bxi, \vec{w}^\star}\exp\(-\frac{1}{2} \vec{w}^{\star \intercal} \hat{\mat{m}}^\intercal \hat{\mat{q}}^{-1}\hat{\mat{m}} \vec{w}^\star + \bxi^\intercal \hat{\mat{q}}^{-1/2} \hat{\mat{m}} \vec{w}^\star  \)  \label{appendix:replicas:committee:log_Psi_w} \\
+			& \hspace{1cm} \times \log \[ \EE_{\vec{w}}  \exp \(\[ - \frac{1}{2}\vec{w}^{\intercal} (\hat{\mat{Q}} + \hat{\mat{q}})\vec{w}  + \bxi^\intercal \hat{\mat{q}}^{1/2} \vec{w} \] \) \] \nonumber \\
+			&\equiv \EE_{\bxi, \vec{w}^\star} \mZ_{\w^\star}\(\hat{\mat{m}}\hat{\mat{q}}^{-1/2} \bxi, \hat{\mat{m}}^\intercal \hat{\mat{q}}^{-1}\hat{\mat{m}} \) \log \mZ_\w\(\hat{\mat{q}}^{1/2} \bxi , \hat{\mat{Q}} + \hat{\mat{q}}\)\,, \nonumber
+			\end{align}
+			with the corresponding denoising distribution $\rQ_\w$ and functions $\mZ_{\w^\star},\mZ_{\w}$ defined by
+		\begin{align}
+			\begin{aligned}
+			\rQ_{\w}(\vec{w}; \bgamma, \bLambda) & \equiv \displaystyle \frac{\rP_{\w}(\vec{w}) }{\mZ_{\w} (\bgamma,\bLambda)} e^{ - \frac{1}{2} \vec{w}^\intercal \bLambda \vec{w}  + \bgamma^\intercal \vec{w}  }\,, \\
+			\mZ_{\w} (\bgamma,\bLambda) &\equiv \EE_{\vec{w}\sim \rP_\w} \[ e^{ - \frac{1}{2} \vec{w}^\intercal \bLambda \vec{w}  + \bgamma^\intercal \vec{w}  } \] = \int_{\bbR^K} \d \vec{w} ~ \rp_{\w}(\vec{w})  e^{ - \frac{1}{2} \vec{w}^\intercal \bLambda \vec{w}  + \bgamma^\intercal \vec{w}  }\,,
+			\end{aligned}
+		\label{distributions:committee_prior}
+		\end{align}
+		respectively with distribution $\rP_{\w^\star}$ and $\rP_\w$.
+
+		\paragraph{Prior integral $\Psi_{\out}^{(r)}$}
+			The limit $r\to 0$ and the derivative of the logarithm of the channel integral \eqref{Psi_out_rs} is more tricky. First, the limit of the determinant \eqref{det_rs} simplifies easily and yields
+			\begin{align*}
+				\det{\mat{Q}^{(\rs)}} \underlim{r}{0} \det{\mat{Q}^\star}
+			\end{align*}
+			and the matrix elements of $\(\mat{Q}^{(\rs)}\)^{-1}$ in this limit become
+			\begin{align*}
+				\td{\mat{Q}}^\star & \underlim{r}{0} \(\mat{Q}^\star\)^{-1}\,,  \spacecase
+				\td{\mat{m}} & \underlim{r}{0} -\(\mat{Q}^\star \)^{-1} \mat{m} ( \mat{Q} - \mat{q})^{-1}\,,  \spacecase
+				\td{\mat{q}} & \underlim{r}{0} - (\mat{Q} - \mat{q})^{-1}\(\mat{q} -  \mat{m}^\intercal \(\mat{Q}^\star \)^{-1} \mat{m} \)( \mat{Q}-\mat{q})^{-1}\,, \spacecase
+				\td{\mat{Q}} & \underlim{r}{0}  \td{\mat{q}} + (\mat{Q}-\mat{q})^{-1}\,.
+			\end{align*}
+			
+			To take properly the $r\to 0$ limit, let us first perform the change of variable $\bxi \leftarrow \bxi - (-\td{\mat{q}})^{1/2} \td{\mat{m}}^\intercal \vec{z}^\star $ in \eqref{Psi_out_rs} so that 
+			\begin{align}
+			\begin{aligned}
+			\left. \Psi_{\out}^{(r)}(\mat{Q}) \right|_{\rs} &= \displaystyle  \int_\bbR \d y \EE_{\bxi} J_0 (y, \bxi, r) \times J_1(y, \bxi, r)^r \\
+			J_0 (y, \bxi, r) &=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^{(\rs)}} )} \\
+			& \times \int_{\bbR^K} \d \vec{z}^\star \rp_{\out^\star} ~ \(y | \vec{z}^\star \) e^{ -\frac{1}{2} \vec{z}^{\star \intercal} \(\td{\mat{Q}}^\star - \td{\mat{m}}^\intercal \td{\mat{q}}^{-1} \td{\mat{m}} \) \vec{z}^\star + \bxi^\intercal (-\td{\mat{q}})^{1/2} \td{\mat{m}}^\intercal \vec{z}^{\star}   } \\
+			J_1(y, \bxi, r) &= \int_{\bbR^K} \d \vec{z}  ~ \rp_{\out}\(y | \vec{z}\) e^{-\frac{1}{2}  \vec{z}^\intercal \( \td{\mat{Q}} - \td{\mat{q}} \) \vec{z}  + \vec{z}^\intercal (-\td{\mat{q}})^{1/2} \bxi }
+			\end{aligned}
+			\end{align}	
+			so that the integral may be written as follows:
+			\begin{align*}
+				&\log\(\Psi_{\out}^{(r)}\) = \log \int \d y \EE_{\bxi} J_0(y,\bxi, r) J_1(y,\bxi, r)^r\\
+				&=  \log \int_\bbR \d y  \EE_{\bxi} \[ J_0(y, \bxi, 0) + r \partial_r J_0(y, \bxi, 0) + r J_0(y, \bxi, 0) \log J_1(y, \bxi, 0) + \Theta(r^2) \]\\
+				&= \log \(1 + r \int_\bbR \d y \times \EE_{\bxi} \[ \partial_r J_0(y, \bxi, 0) + J_0(y, \bxi, 0) \log J_1(y, \bxi, 0) + \Theta(r^2)  \]  \)\\
+				&=  r \int_\bbR \d y \times \EE_{\bxi} \[ \partial_r J_0(y, \bxi, 0) + J_0(y, \bxi, 0) \log J_1(y, \bxi, 0)  \] + \Theta(r^2) 
+			\end{align*}
+
+	where we used the consistency condition $\int_\bbR \d y \times \EE_{\bxi} J_0(y, \bxi, 0)=1$. The first term can be evaluated similarly
+		\begin{align*}
+			&\int_\bbR \d y \times \EE_{\bxi} \partial_r J_0(y, \bxi, 0) = \partial_r \[ \int_\bbR \d y \times \EE_{\bxi} J_0(y, \bxi, r) \]_{r=0} \\
+			&=  \partial_r \[  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^{(\rs)}} )} \int_{\bbR^K} \d \vec{z}^\star e^{ -\frac{1}{2} \vec{z}^{\star \intercal} \(\td{\mat{Q}}^\star \) \vec{z}^\star}  \]_{r=0} \\
+			&= \partial_r \[  \e^{- \frac{1}{2}\log(\det{ \td{\mat{Q}}^\star}  \det{\mat{Q}^{(\rs)}} )} \]_{r=0} = ... = 0 	
+			\end{align*}
+
+		Finally we obtain:
+			\begin{align*}
+			    &\lim\limits_{r\to 0} \partial_r \log\(\Psi_{\out}^{(r)}\) = \int_\bbR \d y \EE_{\bxi}  J_0 (y,\bxi) \log J_1 (y,\bxi) = \lim_{r\to 0} \int_\bbR \d y \EE_{\bxi}  J_0 (y,\bxi) J_1 (y,\bxi)^r
+			\end{align*}
+			with
+			\begin{align*}
+			    &J_{0}(y,\bxi) \equiv \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \int_{\bbR^K} \d \vec{z}^\star \rp_{\out^\star}\left(y|\vec{z}^\star \right) e^{-\frac{1}{2} \vec{z}^{\star \intercal} \mat{N} \vec{z}^{\star} + \bxi^\intercal \mat{M} \vec{z}^{\star}   }\\
+			    &J_{1}(y,\bxi) \equiv \int_{\bbR^K} \d \vec{z} ~\rp_{\out}\(y|\vec{z}\)e^{-\frac{1}{2} \vec{z}^\intercal \(\mat{Q}- \mat{q}\)^{-1} \vec{z} + \vec{z}^\intercal \mat{P} \bxi } \\
+			    &= \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z}\)e^{\bxi^\intercal \mat{P} \(\mat{Q}-\mat{q}\)^{1/2} \vec{z} }
+			\end{align*}
+			where we changed the variable $\vec{z} \leftarrow \(\mat{Q}-\mat{q}\)^{-1/2} \vec{z}$ and used the fact that with the second formulation the determinant term at the power $r$ goes away in the limit $r\to 0$ and
+			with 
+			\begin{align*}
+				\mat{P} &\equiv (-\td{\mat{q}})^{1/2} = (\mat{Q}-\mat{q})^{-1/2}\( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)^{1/2} (\mat{Q}-\mat{q})^{-1/2}\\
+				\mat{M} &\equiv  (-\td{\mat{q}})^{-1/2} \td{\mat{m}}^\intercal = - (-\td{\mat{q}})^{-1/2} ( \mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \(\mat{Q}^\star \)^{-1}  \\
+				&= -\mat{P}^{-1} ( \mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \(\mat{Q}^\star \)^{-1}\\
+				\mat{N} &\equiv \td{\mat{Q}}^\star - \td{\mat{m}}^\intercal \td{\mat{q}}^{-1} \td{\mat{m}}   \\
+						&= (\mat{Q}^\star)^{-1} + (\mat{Q}^\star)^{-1} \mat{m} (\mat{Q}-\mat{q})^{-1} (\mat{Q}-\mat{q}) \( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)^{-1} (\mat{Q}-\mat{q}) (\mat{Q}-\mat{q})^{-1} \mat{m}^\intercal (\mat{Q}^\star)^{-1} \\
+						&= (\mat{Q}^\star)^{-1}\[ \mat{I}_K  + \mat{m} \( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)^{-1} \mat{m}^\intercal (\mat{Q}^\star)^{-1} \] \\
+						&=  (\mat{Q}^\star)^{-1}\[ \mat{I}_K  +  \[ (\mat{Q}^\star)^{-1} \mat{m}^{-\intercal} \mat{q}  \mat{m}^{-1}  - \mat{I}_K\]^{-1}\] \\
+						&= \[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{-1}
+			\end{align*}
+
+			Then we rescale $\vec{z}^\star \leftarrow  \mat{N}^{1/2} \vec{z}^{\star}$ such that 
+			\begin{align*}
+				J_{0}(y,\bxi) &= \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \int_{\bbR^K} \d \vec{z}^\star \rp_{\out^\star}\left(y|\vec{z}^\star \right) e^{-\frac{1}{2} \vec{z}^{\star \intercal} \mat{N} \vec{z}^{\star} + \bxi^\intercal \mat{M} \vec{z}^{\star}   }\\
+				&=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} \\
+				& \times\EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star \right) e^{\bxi^\intercal \mat{M} \mat{N}^{-1/2} \vec{z}^{\star}   } \]
+			\end{align*}
+			
+			Moreover notice that:
+			\begin{align*}
+				\mat{M} \mat{N}^{-1/2} &= \mat{P}^{-1} ( \mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \(\mat{Q}^\star \)^{-1} \[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{1/2}\\
+				&= \mat{P} \mat{P}^{-2} ( \mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \(\mat{Q}^\star \)^{-1} \[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{1/2}\\
+				&= \mat{P} (\mat{Q}-\mat{q})\( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)^{-1} (\mat{Q}-\mat{q}) ( \mat{Q} - \mat{q})^{-1} \mat{m}^\intercal \(\mat{Q}^\star \)^{-1} \[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{1/2}\\
+				&= \mat{P} (\mat{Q}-\mat{q})^{1/2} \mat{R}\\
+			\end{align*}
+			with 
+			\begin{align*}
+				\mat{R} &= (\mat{Q}-\mat{q})^{1/2} \mat{q}^{-1} \mat{m}^\intercal\[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{-1/2}
+			\end{align*}
+			and notice that $\mat{R} = \mat{I}_K$ in the Bayes-optimal setting. Therefore:
+			
+			\begin{align*}
+				J_{0}(y,\bxi)
+				&=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} \\
+				& \times\EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star \right) e^{\bxi^\intercal \mat{P} (\mat{Q}-\mat{q})^{1/2} \mat{R} \vec{z}^{\star}   } \]
+			\end{align*}
+			
+			As a summary, we have:
+			\begin{align*}
+			    &\lim\limits_{r\to 0} \partial_r \log\(\Psi_{\out}^{(r)}\) = \lim_{r\to 0} \int_\bbR \d y \EE_{\bxi}  J_0 (y,\bxi) J_1 (y,\bxi)^r
+			\end{align*}
+			with
+			\begin{align*}
+			    J_{0}(y,\bxi)
+				&=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} \\
+				& \times\EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star \right) e^{\bxi^\intercal \mat{P} (\mat{Q}-\mat{q})^{1/2} \mat{R} \vec{z}^{\star}   } \]\\
+ 				J_{1}(y,\bxi) &= \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z}\)e^{\bxi^\intercal \mat{P} \(\mat{Q}-\mat{q}\)^{1/2} \vec{z} }
+			\end{align*}
+				
+			We can shift $\vec{z} \leftarrow \vec{z} - \(\mat{Q} - \mat{q}\)^{1/2} \mat{P} \bxi$ to obtain 
+			\begin{align*}
+				J_{1}(y,\bxi) &= e^{\frac{1}{2} \bxi^\intercal \mat{P}\(\mat{Q}-\mat{q}\)^{1/2} \(\mat{Q}-\mat{q}\)^{1/2} \mat{P} \bxi} \\
+				& \times \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z} + \(\mat{Q}-\mat{q}\) \mat{P} \bxi \)
+			\end{align*}
+			and $\vec{z}^\star \leftarrow \vec{z}^\star - \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{-1/2} \mat{m} \mat{q}^{-1} \(\mat{Q}-\mat{q}\) \mat{P} \bxi  =  \vec{z}^\star - \mat{R}^\intercal \(\mat{Q}-\mat{q}\)^{1/2}\mat{P} \bxi $:
+			\begin{align*}
+				J_{0}(y,\bxi)
+				&=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} \\
+				& \times\EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star \right) e^{\bxi^\intercal \mat{P} (\mat{Q}-\mat{q})^{1/2} \mat{R} \vec{z}^{\star}   } \]\\
+				&=  \e^{- \frac{1}{2}\log(\det{2\pi \mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} e^{\frac{1}{2}\bxi^\intercal \mat{P} \(\mat{Q}-\mat{q}\)^{1/2} \mat{R} \mat{R}^\intercal \(\mat{Q}-\mat{q}\)^{1/2} \mat{P} \bxi  }\\
+				& \times\EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star + \mat{m}\mat{q}^{-1} \(\mat{Q}-\mat{q}\) \mat{P} \bxi \right)\]\\
+			\end{align*} 
+			
+			We obtain (taking the limit $r\to 0$ to the term in front of $J_{1}$): 
+			
+			\begin{align*}
+				& \lim\limits_{r\to 0} \partial_r \log\(\Psi_{\out}^{(r)}\) \\
+				&= \int_\bbR \d y \int_{\bbR^K} \d\bxi  \e^{- \frac{1}{2}\log(\det{\mat{Q}^\star} )} \e^{\frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)} e^{-\frac{1}{2}\bxi^\intercal \[ \mat{I}_K - \mat{P} \(\mat{Q}-\mat{q}\)^{1/2} \mat{R} \mat{R}^\intercal \(\mat{Q}-\mat{q}\)^{1/2} \mat{P} \] \bxi  } \\
+				& \times \EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star + \mat{m}\mat{q}^{-1} \(\mat{Q}-\mat{q}\) \mat{P} \bxi \right)\] \\
+				& \times \log \[ \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z} + \(\mat{Q}-\mat{q}\) \mat{P} \bxi \) \]
+			\end{align*} 
+			
+			Computing 
+			
+			\begin{align*}
+				& \[ \mat{I}_K - \mat{P} \(\mat{Q}-\mat{q}\)^{1/2} \mat{R} \mat{R}^\intercal \(\mat{Q}-\mat{q}\)^{1/2} \mat{P} \]\\
+				&= \mat{P}\[ \mat{P}^{-2} - \(\mat{Q}-\mat{q}\)^{1/2} \mat{R} \mat{R}^\intercal \(\mat{Q}-\mat{q}\)^{1/2}  \]\mat{P} \\
+				&= \mat{P} (\mat{Q}-\mat{q}) \[ \( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)^{-1} - \mat{q}^{-1} \mat{m}^\intercal\[\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \]^{-1} \mat{m} \mat{q}^{-1} \] \(\mat{Q}-\mat{q}\)\mat{P}\\
+				&= \mat{P} (\mat{Q}-\mat{q}) \mat{q}^{-1} (\mat{Q}-\mat{q}) \mat{P}
+			\end{align*}
+			
+			
+			By finally changing the Gaussian measure $\bxi \leftarrow \mat{q}^{-1/2} \(\mat{Q}-\mat{q}\) \mat{P} \bxi $ we obtain
+			
+			\begin{align*}
+				& \lim\limits_{r\to 0} \partial_r \log\(\Psi_{\out}^{(r)}\) \\
+				&= \exp\(C\) \times \int_\bbR \d y \EE_{\bxi} \\
+				& \times \EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star + \mat{m}\mat{q}^{-1/2}\bxi \right)\] \\
+				& \times \log \[ \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z} + \mat{q}^{1/2} \bxi \) \]
+			\end{align*} 
+			
+			with 
+			\begin{align*}
+				C &= - \frac{1}{2}\log(\det{\mat{Q}^\star} ) + \frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)\\
+				& -\frac{1}{2} \log \det{\mat{P}^2} - \log \det{\mat{Q}-\mat{q}} +\frac{1}{2} \log \det{\mat{q}} \\
+				&= - \frac{1}{2}\log(\det{\mat{Q}^\star} ) + \frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)\\
+				& -\frac{1}{2} \log \det{(\mat{Q}-\mat{q})\( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \) (\mat{Q}-\mat{q})} - \log \det{\mat{Q}-\mat{q}} +\frac{1}{2} \log \det{\mat{q}} \\
+				&= - \frac{1}{2}\log(\det{\mat{Q}^\star} ) + \frac{1}{2}\log\(\det{\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal}\)\\
+				& -\frac{1}{2} \log \det{\( \mat{q} - \mat{m}^\intercal (\mat{Q}^\star)^{-1} \mat{m} \)} +\frac{1}{2} \log \det{\mat{q}} \\
+				&= - \frac{1}{2}\log(\det{\mat{Q}^\star} ) - \frac{1}{2} \log \det{\mat{m}\mat{m}^{-1}} - \frac{1}{2} \log \det{\mat{q}} + \frac{1}{2}\log(\det{\mat{Q}^\star} ) + \frac{1}{2}\log(\det{\mat{q}} )\\
+				&= 0			 
+			\end{align*}
+			
+			We obtain: 
+			\begin{align}
+			\begin{aligned}
+				& \lim_{r\to 0} \partial_r \left. \log  \Psi_{\out}^{(r)} (\mat{Q})\right|_{\rs}\\
+				&=  \int_\bbR \d y  \EE_{\bxi} \\
+				& \times \EE_{\vec{z}^\star \sim\mN\(\vec{0}, \mat{I}_K\)} \[  \rp_{\out^\star}\left(y| \(\mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal\)^{1/2} \vec{z}^\star + \mat{m}\mat{q}^{-1/2}\bxi \right)\] \\
+				& \times \log \[ \EE_{\vec{z}\sim\mN\(\vec{0}, \mat{I}_K\)} ~\rp_{\out}\(y|\(\mat{Q}-\mat{q}\)^{1/2} \vec{z} + \mat{q}^{1/2} \bxi \) \] \\
+				&= \int_\bbR \d y ~ \EE_{\bxi} \mZ_{\out^\star}\( \mat{m}\mat{q}^{-1/2}\bxi, \mat{Q}^\star - \mat{m} \mat{q}^{-1} \mat{m}^\intercal \)  \log \mZ_{\out}\(\mat{q}^{1/2} \bxi, \mat{Q}-\mat{q}\)\,,
+			\end{aligned}
+			\end{align}
+
+			where the denoising distribution $\rQ_{\out}$ and functions $\mZ_{\out^\star},\mZ_{\out}$ are defined by
+			\begin{align}
+			\begin{aligned}
+				\rQ_{\out} (\vec{z}; y, \bomega, \bV ) & \equiv  \displaystyle\frac{\rP_{\out}\( y | \vec{z}\) }{\mZ_{\out}(y, \bomega, \bV)}  \frac{e^{ -\frac{1}{2}  \(\vec{z} - \bomega\)^\intercal \bV^{-1} \(\vec{z} - \bomega\)  }}{\sqrt{\det{2\pi \bV}}}\,, \\
+			\mZ_{\out}(y, \bomega, \bV) &\equiv \EE_{\vec{z} \sim \mN(\vec{0},\rI_K)}\[ \rP_{\out}\(y | \bV^{1/2} \vec{z} + \bomega \) \] \\ 
+			&= \int_{\bbR^K} \d \vec{z} ~ \rp_{\out}\(y | \vec{z} \) \frac{e^{ -\frac{1}{2}  \(\vec{z} - \bomega\)^\intercal \bV^{-1} \(\vec{z} - \bomega\)  }}{\sqrt{\det{2\pi \bV}}}\,.
+			\end{aligned}
+			\label{distributions:committee_channel}
+			\end{align}
+			 for the distributions $\rP_{\out^\star}$, $\rP_{\out}$.
+
+
+\subsection{Summary}
+
+	\subsubsection{Summary - Mismatched case}
+		In the mismatched case, where the teacher and the student have not the same prior distributions, we finally obtain the replica symmetric free entropy $\Phi_{\rs}$ for the committee machine hypothesis class:
+		\begin{align}
+			&\Phi_{\rs}(\alpha) \equiv \EE_{\vec{y},\mat{X}} \[ \lim_{\ndim \to \infty} \frac{1}{\ndim} \log\( \mZ_\ndim\(\vec{y}, \mat{X}\) \) \] \label{appendix:replicas:free_entropy_non_bayes} \nonumber \\
+			&=  \extr_{\mat{Q},\hat{\mat{Q}}, \mat{q}, \hat{\mat{q}}, \mat{m}, \hat{\mat{m}}} \left \{  - \tr{ \mat{m} \hat{\mat{m}}} + \frac{1}{2} \tr{ \mat{Q} \hat{\mat{Q}}} + \frac{1}{2} \tr{  \mat{q} \hat{\mat{q}}}  \right. \\
+			& \left. \qquad \qquad \qquad \qquad  \qquad \qquad + \Psi_\w\(\hat{\mat{Q}},\hat{\mat{m}},\hat{\mat{q}}  \) + \alpha \Psi_\out\( \mat{Q}, \mat{m}, \mat{q};  \brho_{\w^\star}\) \right\} \nonumber \,,
+		\end{align}
+		where $\brho_{\w^\star} \equiv \lim_{\ndim \to \infty} \mat{Q}^\star = \lim_{\ndim \to \infty} \EE_{\vec{w}^\star} \frac{1}{\ndim} \mat{W}^{\star\intercal} \mat{W}^{\star} $ and the channel and prior integrals are defined by
+		\begin{align}
+			\Psi_\w\(\hat{\mat{Q}},\hat{\mat{m}},\hat{\mat{q}}  \) &\equiv \EE_{\bxi} \[ \mZ_{\w^\star}\( \hat{\mat{m}}  \hat{\mat{q}}^{-1/2}  \bxi , \hat{\mat{m}} \hat{\mat{q}}^{-1} \hat{\mat{m}}  \) \right. \label{appendix:replicas:committee:free_entropy_terms_non_bayes} \\
+			& \left. \qquad \qquad \qquad \qquad \times  \log \mZ_{\w} \(  \hat{\mat{q}}^{1/2} \bxi, \hat{\mat{Q}} + \hat{\mat{q}} \)   \]\,, \nonumber \spacecase
+			\Psi_\out\(\mat{Q},\mat{m}, \mat{q}; \brho_{\w^\star}\) &\equiv \EE_{y, \bxi } \[ \mZ_{\out^\star} \( y,  \mat{m} \mat{q}^{-1/2} \bxi, \brho_{\w^\star} - \mat{m} \mat{q}^{-1} \mat{m}^\intercal  \)\right. \nonumber \\
+			& \left. \qquad \qquad \qquad \qquad \times \log \mZ_{\out} \( y,  \mat{q}^{1/2} \bxi, \mat{Q} - \mat{q} \)  \]\,,
+		\end{align}
+		where again $\mZ_{\out^\star},\mZ_{\w^\star}$ and $\mZ_{\out},\mZ_{\w}$ are defined in \eqref{distributions:committee_prior}- \eqref{distributions:committee_channel} and depend respectively on channel and prior distributions of the \emph{teacher} and \emph{student}.
+
+
+	\subsubsection{Bayes optimal MMSE estimation}
+		For MMSE estimation in the Bayes-optimal setting, the student has access to the ground truth distributions of the teacher $\rP_\out\(\vec{y} | \mat{Z} \) = \rP_{\out^\star}\(\vec{y} | \mat{Z}\) $ and $\rP_\w\(\mat{W}\) = \rP_{\w^\star}(\mat{W})$, and therefore $\mZ_{\out}=\mZ_{\out^\star}$, $\mZ_{\w}=\mZ_{\w^\star}$. 
+		In this idealistic setting, the Nishimori conditions imply that 
+		\begin{align}
+		\begin{aligned}
+			\mat{Q} &= \mat{Q}_{\w^\star}\,, && \hat{\mat{Q}}=\mat{0}\,, && \mat{m}= \mat{q} \equiv \mat{q}_\bayes \,, && \hat{\mat{m}}=\hat{\mat{q}} \equiv  \hat{\mat{q}}_\bayes \,.
+		\end{aligned}
+			\label{appendix:replicas:committee:nishimori}
+		\end{align}
+		Therefore the free entropy in \eq\eqref{appendix:replicas:committee:free_entropy_terms_non_bayes} simplifies as an optimization problem over the \emph{overlaps} $\mat{q}_\bayes,\hat{\mat{q}}_\bayes \in \bbR^{K\times K}$
+		\begin{align}
+			\Phi_{\rs}^\bayes (\alpha) &=  \extr_{\mat{q}_\bayes,\hat{\mat{q}}_\bayes} \left \{ - \frac{1}{2} \tr{\mat{q}_\bayes \hat{\mat{q}}_\bayes}  + \Psi_{\w}^\bayes\(\hat{\mat{q}}_\bayes  \) + \alpha \Psi_{\out}^\bayes\(\mat{q}_\bayes; \brho_{\w^\star}\) \right\} \,,
+			\label{appendix:free_entropy_bayes}
+		\end{align}
+		with free entropy terms $\Psi_{\w}^\bayes$ and $\Psi_{\out}^\bayes$ given by
+		\begin{align}
+				\Psi_{\w}^\bayes\(\hat{\mat{q}}\) &= \EE_{\xi} \[ \mZ_{\w^\star} \(  \hat{\mat{q}}^{1/2}\bxi,   \hat{\mat{q}} \)  \log \mZ_{\w^\star} \(  \hat{\mat{q}}^{1/2}\bxi,   \hat{\mat{q}} \)   \] \,, \nonumber \spacecase 
+				\Psi_{\out}^\bayes \(\mat{q}; \brho_{\w^\star}\) &= \EE_{y, \bxi } \[ \mZ_{\out} \( y,  \mat{q}^{1/2} \bxi, \brho_{\w^\star} - \mat{q} \) \right. \\
+				& \left. \qquad \qquad \qquad \qquad  \times  \log \mZ_{\out} \( y,  \mat{q}^{1/2}\bxi, \brho_{\w^\star} - \mat{q} \)  \]\,. \nonumber
+		\end{align} 
+
+\paragraph{Application to the GLM}
+For the GLM hypothesis class, the same equations are valid if we take $K=1$ for both the teacher and the student. As a result, we recover the replica symmetric free entropy in the Bayes-optimal setting rigorously proven in \cite{barbier2017phase}.
+
+\subsection{Fixed point equations}
+\label{appendix:replica_computation:committee:fixed_point}
+
+The overlaps parameters, such as $\mat{m}, \mat{q}$, play a crucial role since they measure the performances of the statistical estimation. Their behaviours are respectively characterized by the extremization of the free entropy \eqref{appendix:replicas:free_entropy_non_bayes} in the mismatched setting and \eqref{appendix:free_entropy_bayes} in the Bayes-optimal case.
+In this section, we give the expressions of the corresponding fixed point equations, whose derivations can be found in \cite{aubin2020generalization} \App IV.4-5 for $K=1$ which can be extended to $K \ge 1$.
+
+\subsubsection{Mismatched setting}
+\label{appendix:fixed_point_erm}
+Extremizing the free entropy eq.~\eqref{appendix:replicas:free_entropy_non_bayes}, we easily obtain the set of six fixed point equations
+\begin{align}
+\begin{aligned}
+	\hat{\mat{Q}} &= -2 \alpha \partial_{\mat{Q}} \Psi_\out\(\mat{Q},\mat{m}, \mat{q}; \brho_{\w^\star}\) \,, \qquad 
+			&& \mat{Q} = - 2  \partial_{\hat{\mat{Q}}} \Psi_{\w}\(\hat{\mat{Q}},\hat{\mat{m}},\hat{\mat{q}}  \)\spacecase
+	\hat{\mat{q}} &= -2 \alpha \partial_{\mat{q}} \Psi_\out\(\mat{Q},\mat{m}, \mat{q}; \brho_{\w^\star}\)\,, 
+			&& \mat{q} =   -2\partial_{\hat{\mat{q}}} \Psi_\w\(\hat{\mat{Q}},\hat{\mat{m}},\hat{\mat{q}}  \) \,,\spacecase
+	\hat{\mat{m}} &= \alpha \partial_{\mat{m}} \Psi_\out\(\mat{Q},\mat{m}, \mat{q}; \brho_{\w^\star}\)\,,
+			&& \mat{m} = \partial_{\hat{\mat{m}}} \Psi_\w\(\hat{\mat{Q}},\hat{\mat{m}},\hat{\mat{q}}  \) \,.
+\end{aligned}
+\label{appendix:se_equations_generic_not_simplified}
+\end{align}
+Interestingly, these equations can be reformulated as functions of $\mZ_{\out^\star}$, $\mZ_{\w^\star}$ and the denoising functions $f_{\out^\star}, f_{\w^\star}, f_\out, f_{\w}$ defined by
+
+	\begin{align}
+		\vec{f}_{\w}(\bgamma ,\bLambda) &\equiv  \partial_\bgamma \log\(\mZ_{\w}(\bgamma,\bLambda)\) = \EE_{\rQ_{\w}} \[ \vec{w} \]\,, \label{appendix:definitions:update_generic:committee:prior:fw} \Spacecase 
+		\partial_\bgamma \vec{f}_{\w} (\bgamma ,\bLambda) &\equiv  \EE_{\rQ_{\w}} \[\vec{w} \vec{w}^\intercal \] - \vec{f}_{\w}(\bgamma ,\bLambda) ^{\otimes 2} \label{appendix:definitions:update_generic:committee:prior:dfw}\,,\Spacecase
+		\vec{f}_{\out} (y,\bomega, \bV) &\equiv \partial_\bomega \log \( \mZ_{\out}(y, \bomega, \bV) \) = \bV^{-1} \EE_{\rQ_{\out}} \[ \vec{z} - \bomega\]\,, \label{appendix:definitions:update_generic:committee:channel:fout} \Spacecase	
+		\partial_{\bomega} \vec{f}_{\out} (y, \bomega, \bV) &\equiv \displaystyle \frac{\partial \vec{f}_{\out}(y,\bomega, \bV)}{\partial \bomega}\label{appendix:definitions:update_generic:committee:channel:dfout} \\
+			&= \bV^{-1} \EE_{\rQ_{\out}} \[ \(\vec{z} - \bomega\)^{\otimes2} \]\bV^{-1} - \bV^{-1} - \vec{f}_{\out} (y,\bomega, \bV)^{\otimes2} \,.\notag
+	\end{align}
+Defining the natural variables $\bSigma = \mat{Q} - \mat{q}$ and $\hat{\bSigma}= \hat{\mat{Q}}+\hat{\mat{q}}$ they can reformulated as
+\begin{align}
+\begin{aligned}
+	\hat{\mat{m}} &= \alpha \EE_{y, \bxi } \[ \mZ_{\out^\star} \times  \vec{f}_{\out^\star} \( y,  \mat{m} \mat{q}^{-1/2} \bxi, \brho_{\w^\star} - \mat{m}^\intercal \mat{q}^{-1}\mat{m}  \)  \right. \\
+	& \left. \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad \times \vec{f}_{\out} \( y,  \mat{q}^{1/2}\bxi, \bSigma \)^\intercal    \]\,, \\
+	\hat{\mat{q}} &= \alpha \EE_{y, \bxi } \[ \mZ_{\out^\star} \(y,  \mat{m} \mat{q}^{-1/2} \bxi, \brho_{\w^\star} - \mat{m}^\intercal \mat{q}^{-1}\mat{m}    \)   \vec{f}_{\out} \(  y,  \mat{q}^{1/2}\bxi, \bSigma\)^{\otimes 2}    \]\,, \\
+	\hat{\bSigma} &= - \alpha \EE_{y, \bxi } \[ \mZ_{\out^\star} \( y,  \mat{m} \mat{q}^{-1/2} \bxi, \brho_{\w^\star} - \mat{m}^\intercal \mat{q}^{-1}\mat{m}   \)  \right. \\
+	& \left. \qquad \qquad\qquad \qquad \qquad \qquad \qquad \qquad \times \partial_\bomega \vec{f}_{\out} \(  y,  \mat{q}^{1/2}\bxi, \bSigma \)    \]\,,  \\
+	\mat{m} &= \EE_{\bxi} \[ \mZ_{\w^\star} \times f_{\w^\star}\( \hat{\mat{m}}  \hat{\mat{q}}^{-1/2}  \bxi , \hat{\mat{m}}^\intercal \hat{\mat{q}}^{-1} \hat{\mat{m}}  \) \vec{f}_{\w} \(  \hat{\mat{q}}^{1/2}\bxi  , \hat{\bSigma} \)   \]\,, \\
+	\mat{q} &= \EE_{\bxi} \[ \mZ_{\w^\star}\( \hat{\mat{m}}  \hat{\mat{q}}^{-1/2}  \bxi , \hat{\mat{m}}^\intercal \hat{\mat{q}}^{-1} \hat{\mat{m}}   \) \vec{f}_{\w} \( \hat{\mat{q}}^{1/2}\bxi  , \hat{\bSigma}\)^2   \]\,, \\
+	\bSigma &= \EE_{\bxi} \[ \mZ_{\w^\star}\(\hat{\mat{m}}  \hat{\mat{q}}^{-1/2}  \bxi , \hat{\mat{m}}^\intercal \hat{\mat{q}}^{-1} \hat{\mat{m}}   \)  \partial_\bgamma \vec{f}_{\w} \(  \hat{\mat{q}}^{1/2}\bxi  , \hat{\bSigma}\) \] \,,
+\end{aligned}
+\label{appendix:se_equations_generic}
+\end{align}
+where we use the abusive notation $\EE_{y} = \int_\bbR \d y$.
+
+\subsubsection{Bayes-optimal estimation}
+Extremizing the Bayes-optimal free entropy eq.~\eqref{appendix:free_entropy_bayes}, we easily obtain the set of fixed point equations over the scalar parameters $\mat{q}_\bayes, \hat{\mat{q}}_\bayes$. It can be deduced from eq.~\eqref{appendix:se_equations_generic} using the Nishimori conditions $\vec{f}_{\w} = \vec{f}_{\w^\star}$, $\vec{f}_{\out}=\vec{f}_{\out^\star}$, $\mat{m}=\mat{q}, \bSigma = \brho_{\w^\star} - \mat{q}, \hat{\mat{m}}=\hat{\mat{q}}$ and $\hat{\bSigma}=\hat{\mat{q}}$ that lead to
+\begin{align}
+	\hat{\mat{q}}_\bayes &= \alpha \EE_{y, \bxi } \[ \mZ_{\out^\star} \( y,  \mat{q}_\bayes^{1/2}\bxi, \brho_{\w^\star} - \mat{q}_\bayes \)   \vec{f}_{\out^\star} \( y,  \mat{q}_\bayes^{1/2}\bxi, \brho_{\w^\star} - \mat{q}_\bayes \)^{\otimes 2}    \] \,, \nonumber \spacecase
+	\mat{q}_\bayes &= \EE_{\bxi} \[ \mZ_{\w^\star}\( \hat{\mat{q}}_\bayes^{1/2}  \bxi , \hat{\mat{q}}_\bayes  \) \vec{f}_{\w^\star} \(  \hat{\mat{q}}_\bayes^{1/2}\bxi, \hat{\mat{q}}_\bayes\)^{\otimes 2}   \] \,.
+\label{appendix:se_equations_generic:bayes}
+\end{align}

@@ -1,0 +1,112 @@
+\usepackage{import} % sub levels import
+
+%% Language and encoding %%
+\PassOptionsToPackage{utf8}{inputenc}
+\usepackage{inputenc}
+\PassOptionsToPackage{french,american,english,british}{babel} 
+\usepackage{babel}
+\selectlanguage{french}
+\usepackage{mathptmx}
+\usepackage{tocloft}
+
+%% Font %%
+\PassOptionsToPackage{T1}{fontenc} % T2A for cyrillics
+\usepackage{fontenc}
+\usepackage{textcomp} % Fix warning with missing font shapes
+\usepackage{scrhack} % Fix warnings when using KOMA with listings package  
+\usepackage{xspace} % To get the spacing after macros right
+\usepackage{mparhack} % To get marginpar right
+\usepackage{fixltx2e} % Fixes some LaTeX stuff 
+\PassOptionsToPackage{smaller}{acronym} 
+\usepackage[printonlyused]{acronym}
+% Acronym, option: [printonlyused]
+\renewcommand*{\aclabelfont}[1]{\acsfont{#1}}
+%% Different fonts
+\usepackage[osf]{libertine}
+
+%% Math %%
+\PassOptionsToPackage{fleqn}{amsmath} % Math environments and more by the AMS 
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathrsfs, bm}
+\usepackage{amscd,amsbsy,dsfont}
+\usepackage{nicefrac}
+\usepackage{microtype}      % microtypography
+\usepackage{mathtools}
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{stmaryrd} % Fancy letters
+
+%% Scientific %%
+\usepackage[intoc,english]{nomencl} % nomenclature
+\makenomenclature
+\usepackage{etoolbox}
+\usepackage{physics}
+\usepackage{tensor}
+\usepackage{empheq}
+
+%% Algos %%
+\usepackage{algorithmic}
+\usepackage{algorithm2e}
+	
+%% Graphicx %%
+\PassOptionsToPackage{pdftex}{graphicx}
+\usepackage{graphicx} 
+\usepackage{epstopdf}
+
+%% Floats: Tables, Figures AND Captions
+%\usepackage{enumitem}
+\usepackage{mdwlist}
+\usepackage{tabularx} % Better tables
+\usepackage{booktabs} % professional-quality tables
+\setlength{\extrarowheight}{3pt} % Increase table row height
+\newcommand{\tableheadline}[1]{\multicolumn{1}{c}{\spacedlowsmallcaps{#1}}}
+\newcommand{\myfloatalign}{\centering} % To be used with each float for alignment
+\usepackage{caption}
+\captionsetup{font=small}
+\usepackage{subcaption}
+%\usepackage{subfig}
+\usepackage{float}
+\usepackage{cases}
+\usepackage{pdfpages} % pdfpages
+\usepackage{bookmark}
+\usepackage{adjustbox}
+\usepackage{blkarray}
+%% Nomencalture %%
+\usepackage{nomencl}
+\makenomenclature
+
+
+%% Hyper references %%
+\hypersetup{
+colorlinks=true, linktocpage=true, pdfstartpage=3, pdfstartview=FitV,
+urlcolor=\colorurl, linkcolor=\colorlink, citecolor=\colorcite,
+}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{xr} % Cross references
+
+%% Other %%
+\usepackage[most]{tcolorbox}
+
+%% Tikz %%
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\tikzset{middlearrow/.style={decoration={markings,mark= at position 0.5 with {\arrow{#1}} ,},postaction={decorate}}}
+\newcommand{\midarrow}{\tikz \draw[-triangle 90] (0,0) -- +(.1,0);}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{fit}
+\usetikzlibrary{bayesnet}
+\usepackage{pgfplots}
+\usetikzlibrary{calc}
+\usepackage{ifthen}
+\usetikzlibrary{decorations.text}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{shapes}
+\usepackage{pgfplotstable}
+\usetikzlibrary{fadings,shapes.arrows,shadows}   
+\usetikzlibrary{calc}
+
+\usetikzlibrary{external}
+\tikzexternalize[mode=list and make]
+\tikzexternaldisable
+

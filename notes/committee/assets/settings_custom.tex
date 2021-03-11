@@ -1,0 +1,412 @@
+\newcommand{\aclink}[1]{#1}
+\newcommand{\ie}{i.\,e.~}
+\newcommand{\eg}{e.\,g.~}
+\newcommand{\Sec}{Sec.~}
+\newcommand{\Part}{Part~}
+\newcommand{\Chap}{Chap.~}
+\newcommand{\App}{Appendix.~}
+\newcommand{\Alg}{Algo.~}
+\newcommand{\Fig}{Fig.~}
+\newcommand{\Tab}{Table.~}
+\newcommand{\Left}{(\textbf{Left})~}
+\newcommand{\Right}{(\textbf{Right})~}
+\newcommand{\Center}{(\textbf{Center})~}
+\newcommand{\Leftn}{(\textbf{Left})}
+\newcommand{\Rightn}{(\textbf{Right})}
+\newcommand{\Centern}{(\textbf{Center})}
+\newcommand{\Up}{(\textbf{Up})~}
+\newcommand{\Down}{(\textbf{Down})~}
+
+
+\def \({\left(}
+\def \){\right)}
+\def \[{\left[}
+\def \]{\right]}
+\newcommand{\nn}{\nonumber \\}
+\newcommand{\tbf}[1]{{\textbf{#1}}}
+\newcommand{\bsy}[1]{{\boldsymbol{#1}}}
+\newcommand{\txt}[1]{\text{#1}}
+\newcommand{\defeq}{\vcentcolon=}
+\newcommand{\eqdef}{=\vcentcolon}
+\newcommand{\cv}[1]{\underline{#1}}
+\newcommand{\bQ}{{\textbf {Q}}}
+\newcommand{\bq}{{\textbf {q}}}
+\newcommand{\br}{{\textbf {r}}}
+\newcommand{\bU}{{\textbf {U}}}
+\newcommand{\bu}{{\textbf {u}}}
+\newcommand{\bV}{{\mathbf {V}}}
+\newcommand{\bF}{{\textbf {F}}}
+\newcommand{\bY}{{\textbf {Y}}}
+\newcommand{\bff}{{\textbf {f}}}
+\newcommand{\bG}{{\textbf {G}}}
+\newcommand{\bW}{{\textbf {W}}}
+\newcommand{\bZ}{{\textbf {Z}}}
+\newcommand{\bh}{{\textbf {h}}}
+\newcommand{\bw}{{\textbf {w}}}
+\newcommand{\bv}{{\textbf {v}}}
+\newcommand{\bA}{{\textbf {A}}}
+\newcommand{\bB}{{\textbf {B}}}
+\newcommand{\bhx}{\hat {\textbf {x}}}
+\newcommand{\bX}{{\textbf {X}}}
+\newcommand{\bx}{{\textbf {x}}}
+\newcommand{\bo}{{\textbf {o}}}
+\newcommand{\by}{{\textbf {y}}}
+\newcommand{\bz}{{\textbf {z}}}
+\newcommand{\bl}{{\textbf {l}}}
+\newcommand{\bs}{{\textbf {s}}}
+\newcommand{\bS}{{\textbf {S}}}
+\newcommand{\bc}{{\textbf {c}}}
+\newcommand{\bk}{{\textbf {k}}}
+\newcommand{\bR}{{\textbf {R}}}
+%% Bold greek %%
+\newcommand{\beps}{{\boldsymbol {\epsilon}}}
+\newcommand{\bxigma}{{\boldsymbol{\Sigma}}}
+\newcommand{\bxi}{{\boldsymbol{\xi}}}
+\newcommand{\bgamma}{{\boldsymbol{\gamma}}}
+\newcommand{\bGamma}{{\boldsymbol{\Gamma}}}
+\newcommand{\bomega}{{\boldsymbol{\omega}}}
+\newcommand{\boldeta}{{\boldsymbol{\eta}}}
+\newcommand{\btheta}{{\boldsymbol{\theta}}}
+\newcommand{\bphi}{{\boldsymbol{\phi}}}
+\newcommand{\bchi}{{\boldsymbol{\chi}}}
+\newcommand{\brho}{{\boldsymbol{\rho}}}
+\newcommand{\bsigma}{{\boldsymbol{\sigma}}}
+\newcommand{\bSigma}{{\boldsymbol{\Sigma}}}
+\newcommand{\blambda}{{\boldsymbol{\lambda}}}
+\newcommand{\bLambda}{{\boldsymbol{\Lambda}}}
+\newcommand{\bDelta}{{\boldsymbol{\Delta}}}
+\newcommand{\btau}{{\boldsymbol{\tau}}}
+\newcommand{\bzero}{{\textbf{0}}}
+\newcommand{\bmu}{{\boldsymbol{\mu}}}
+\newcommand{\bepsilon}{{\boldsymbol{\epsilon}}}
+
+%% Mathcal
+\newcommand{\cC}{{\mathcal{C}}}
+\newcommand{\cB}{{\mathcal{B}}}
+
+\newcommand{\ba}{{\textbf {a}}}
+
+\newcommand{\lab}[1]{\label{#1}}
+\newcommand{\bxii}{{\boldsymbol{\xi}}}
+\newcommand{\bre}{{\textbf {e}}}
+\newcommand{\bytilde}{{\tilde{\textbf {y}}}}
+\newcommand{\bxhat}{{\tilde{\textbf {x}}}}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\calF}{\mathcal F}
+\newcommand{\s}{\sigma}
+\renewcommand{\d}{\mathrm{d}}
+\newcommand{\D}{\mathrm{D}}
+\newcommand{\e}{\text {e}}
+\newcommand{\ds}{\Delta\sigma}
+\newcommand{\hw}{h^{\textrm W}}
+\newcommand{\sw}{\sigma^{\textrm W}}
+\newcommand{\<}{\langle}
+\renewcommand{\>}{\rangle}
+\newcommand{\de}{\partial}
+\newcommand{\la}{\langle}
+\newcommand{\ra}{\rangle}
+\newcommand{\eq}{\text{ eq}.~}
+\newcommand{\ua}{\uparrow}
+\newcommand{\da}{\downarrow}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\beqa}{\begin{eqnarray}}
+\newcommand{\eeqa}{\end{eqnarray}}
+\newcommand\smallO{
+  \mathchoice
+    {{\scriptstyle\mathcal{O}}}% \displaystyle
+    {{\scriptstyle\mathcal{O}}}% \textstyle
+    {{\scriptscriptstyle\mathcal{O}}}% \scriptstyle
+    {\scalebox{.7}{$\scriptscriptstyle\mathcal{O}$}}%\scriptscriptstyle
+  }
+\newcommand{\bea}{\begin{align}}
+\newcommand{\eea}{\end{align}}
+
+%% Theorems %%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{\textbf{Lemma}}
+\newtheorem{thm}[theorem]{\textbf{Theorem}}
+\newtheorem{remark}[theorem]{\textbf{Remark}}
+\newtheorem{proposition}[theorem]{\textbf{Proposition}}
+\newtheorem{corollary}[theorem]{\textbf{Corollary}}
+\newtheorem{definition}[theorem]{\textbf{Definition}}
+
+\DeclareMathOperator{\atanh}{atanh}
+\DeclareMathAlphabet{\varmathbb}{U}{bbold}{m}{n}
+\newcommand{\id}{\mathds{1}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbX}{\mathbb{X}}
+\newcommand{\bbH}{\mathbb{H}}
+\newcommand{\bbK}{\mathbb{K}}
+\newcommand{\bbY}{\mathbb{Y}}
+\newcommand{\bbD}{\mathbb{D}}
+\newcommand{\bbS}{\mathbb{S}}
+\newcommand{\bbT}{\mathbb{T}}
+\newcommand{\bbP}{\mathbb{P}}
+\newcommand{\bbZ}{\mathbb{Z}}
+\newcommand{\bbN}{\mathbb{N}}
+\newcommand{\bbM}{\mathbb{M}}
+\newcommand{\bbA}{\mathbb{A}}
+\newcommand{\bbB}{\mathbb{B}}
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbC}{\mathbb{C}}
+\newcommand{\bbV}{\mathbb{V}}
+\renewcommand{\d}{{\mathrm d}}
+\renewcommand{\P}{{\mathrm P}}
+\newcommand{\B}{{\mathrm B}}
+\newcommand{\iif}{\Longleftrightarrow}
+\newcommand{\noi}{\noindent}
+
+\def\du#1{\underline{\underline{#1}}}
+\newcommand{\ud}[1]{{\underline{#1}}}
+\newcommand{\mZ}{\mathcal{Z}}
+\newcommand{\mH}{\mathcal{H}}
+\newcommand{\mO}{\mathcal{O}}
+\newcommand{\mI}{\mathcal{I}}
+\newcommand{\mM}{\mathcal{M}}
+\newcommand{\mN}{\mathcal{N}}
+\newcommand{\mS}{\mathcal{S}}
+\newcommand{\mC}{\mathcal{C}}
+\newcommand{\mD}{\mathcal{D}}
+\newcommand{\mX}{\mathcal{X}}
+\newcommand{\mY}{\mathcal{Y}}
+\newcommand{\mL}{\mathcal{L}}
+\newcommand{\mA}{\mathcal{A}}
+\newcommand{\mB}{\mathcal{B}}
+\newcommand{\mR}{\mathcal{R}}
+\newcommand{\mF}{\mathcal{F}}
+\newcommand{\mG}{\mathcal{G}}
+\newcommand{\mP}{\mathcal{P}}
+\newcommand{\mQ}{\mathcal{Q}}
+\newcommand{\mE}{\mathcal{E}}
+\newcommand{\mT}{\mathcal{T}}
+	
+\renewcommand{\tr}[1]{\textrm{Tr}\(#1\)}
+\renewcommand{\det}[1]{\textrm{det}\(#1\)}
+\newcommand{\diag}[1]{\textrm{diag}\(#1\)}
+\newcommand{\td}[1]{{\tilde{#1}}}
+\newcommand{\cov}[1]{\textrm{Cov}\[#1\]}
+
+\newcommand{\fixme}[1]{
+{ \sffamily\normalsize\bfseries \color{red} \underline{FIXME \index{Fixme}:}
+\rmfamily \normalsize #1.}\\}
+
+\newcommand{\spacecase}[0]{\vspace{0.3cm} \\}
+\newcommand{\Spacecase}[0]{\vspace{0.5cm} \\}
+\newcommand{\hhspace}[0]{\hspace{0.3cm}}
+\newcommand{\Eq}[1]{(Eq.#1)}
+
+\def\E{\mathbb{E}}
+\def\eps{\epsilon}
+\def\del{\delta}
+\def\cE{\mathcal E}
+\newcommand{\Var}[1]{\textrm{Var}(#1)}
+
+
+\newcommand{\andcase}[0]{\hspace{ 0.2cm }\textrm{ and }\hspace{ 0.2cm }}
+
+
+\renewcommand{\vec}[1]{{\mathbf{#1}}}
+\newcommand{\mat}[1]{{\mathbf{#1}}}
+
+\newcommand{\erfc}{{\textrm erfc}}
+\newcommand{\relu}{{\textrm{relu}}}
+\newcommand{\sign}{{\textrm{sign}}}
+\newcommand{\linear}{{\textrm{linear}}}
+
+\newcommand{\W}[1]{{\mat{W}^{[#1]}}}
+\newcommand{\Y}[0]{{\mat{Y}}}
+\newcommand{\Z}{\mat{Z}}
+\newcommand{\mW}[0]{{\mat{W}}}
+\newcommand{\X}[0]{{\mat{X}}}
+\renewcommand{\S}[0]{{\mat{S}}}
+\newcommand{\R}[0]{{\mat{R}}}
+\newcommand{\m}[0]{\mat{m}}
+\newcommand{\q}[0]{\mat{q}}
+\newcommand{\Q}[0]{\mat{Q}}
+\newcommand{\mh}[0]{\hat{\mat{m}}}
+\newcommand{\qh}[0]{\hat{\mat{q}}}
+\newcommand{\Qh}[0]{\hat{\mat{Q}}}
+\newcommand{\iid}[0]{{\textrm{iid}~}}
+\newcommand{\out}[0]{\mathrm{out}}
+\newcommand{\w}[0]{{\mathrm{w}}}
+\renewcommand{\u}[0]{{\mathrm{u}}}
+\renewcommand{\v}[0]{{\mathrm{v}}}
+\newcommand{\z}[0]{{\mathrm{z}}}
+\newcommand{\x}[0]{{\mathrm{x}}}
+\newcommand{\y}[0]{{\mathrm{y}}}
+
+\newcommand{\rI}[0]{\mat{I}}
+\newcommand{\rJ}[0]{\mat{J}}
+\newcommand{\rB}[0]{{\mathrm{B}}}
+\newcommand{\rC}[0]{{\mathrm{C}}}
+\newcommand{\rH}[0]{{\mathrm{H}}}
+\newcommand{\rU}[0]{{\mathrm{U}}}
+\newcommand{\rS}[0]{{\mathrm{S}}}
+\newcommand{\rP}[0]{{\mathrm{P}}}
+\newcommand{\rG}[0]{{\mathrm{G}}}
+\newcommand{\rQ}[0]{{\mathrm{Q}}}
+\newcommand{\rE}[0]{{\mathrm{E}}}
+\newcommand{\rV}[0]{{\mathrm{V}}}
+\newcommand{\rF}[0]{{\mathrm{F}}}
+\newcommand{\bg }[0]{{\textbf{g}}}
+\newcommand{\rp}[0]{{\mathrm{p}}}
+\renewcommand{\rq}[0]{{\mathrm{q}}}
+\newcommand{\rg}[0]{{\mathrm{g}}}
+\newcommand{\rd}[0]{{\mathrm{d}}}
+\newcommand{\rX}[0]{{\mathrm{X}}}
+\newcommand{\rY}[0]{{\mathrm{Y}}}
+
+
+\newcommand{\underlim}[2]{\underset{#1 \to #2}{\longrightarrow}}
+\newcommand{\extr}{{\textbf{extr}}}
+\newcommand{\Diff}{\mathrm{D}}
+\newcommand{\argmin}{\mathrm{argmin}}
+\newcommand{\argmax}{\mathrm{argmax}}
+\newcommand{\train}{\mathrm{train}}
+\newcommand{\test}{\mathrm{test}}
+\newcommand{\MSE}{\mathrm{MSE}}
+\newcommand{\gs}{\mathrm{gs}}
+\newcommand{\bayes}{\mathrm{b}}
+\newcommand{\gibbs}{\mathrm{gibbs}}
+\newcommand{\vc}{\mathrm{vc}}
+\newcommand{\mmse}{\mathrm{mmse}}
+\newcommand{\map}{\mathrm{map}}
+\newcommand{\mle}{\mathrm{mle}}
+\newcommand{\rL}[0]{{\ell}}
+\newcommand{\gen}{\mathrm{gen}}
+\newcommand{\rs}{\mathrm{rs}}
+%\newcommand{\1rsb}{1\mathrm{rsb}}
+%\newcommand{\2rsb}{2\mathrm{rsb}}
+
+
+%% Color boxes %%
+
+\definecolor{green}{RGB}{0, 153, 0}
+\definecolor{light_blue}{RGB}{51, 153, 255}
+\definecolor{orange}{RGB}{255, 204, 0}
+\definecolor{bg}{RGB}{0, 153, 153}
+\definecolor{blue}{RGB}{0, 102, 204}
+\definecolor{red}{RGB}{204, 0, 0}
+\definecolor{lg}{RGB}{214, 214, 214}
+
+\renewcommand{\colorbox}[1]{\fcolorbox{lg}{lg}{
+\begin{minipage}{0.8\linewidth}
+#1
+\end{minipage}} }
+
+
+\newcommand{\boxedred}[1]{\textcolor{red}{%
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.5, minimum width=1ex,draw] {\normalcolor$\displaystyle#1$};}}
+\newcommand{\boxedblack}[1]{\textcolor{black}{%
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.5, minimum width=1ex,draw] {\normalcolor$\displaystyle#1$};}}
+\newcommand{\boxedorange}[1]{\textcolor{BurntOrange}{%
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.5, minimum width=1ex,draw] {\normalcolor$\displaystyle#1$};}}
+\newcommand{\boxedteal}[1]{\textcolor{teal}{%
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.5, minimum width=1ex,draw] {\normalcolor$\displaystyle#1$};}}
+\newcommand{\boxedgreen}[1]{\textcolor{ForestGreen}{%
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.5, minimum width=1ex,draw] {\normalcolor$\displaystyle#1$};}}
+
+\newcommand{\idea}[2]{{\color{yellow} \Large \faLightbulbO} \hspace{0.3cm} \textbf{#1} {#2}}
+
+\newcommand{\tod}[2]{{\color{red} \faFlagCheckered} \hspace{0.3cm} \textbf{#1} {#2}}
+
+\newcommand{\run}[2]{{\color{orange} \faHourglassStart} \hspace{0.3cm} \textbf{#1} {#2}}
+
+\newcommand{\done}[2]{{\color{green} \faCheck} \hspace{0.3cm} \textbf{#1} {#2}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    stringstyle=\color{codepurple},
+    commentstyle=\color{codegreen},
+    numberstyle=\tiny\color{codegray},
+    basicstyle=\ttfamily\footnotesize,
+    numbers=left,      
+}
+\lstset{style=mystyle}
+
+
+\newcommand*{\colorboxed}{}
+\def\colorboxed#1#{%
+  \colorboxedAux{#1}%
+}
+\newcommand*{\colorboxedAux}[3]{%
+  % #1: optional argument for color model
+  % #2: color specification
+  % #3: formula
+  \begingroup
+    \colorlet{cb@saved}{.}%
+    \color#1{#2}%
+       \boxed{%
+      \color{cb@saved}%
+      #3%
+    }%
+  \endgroup
+}
+
+\renewcommand{\boxed}[1]{
+\tikz[baseline={([yshift=-1ex]current bounding box.center)}] \node [rectangle,line width=1.25, minimum width=1ex,draw, color=red] {\normalcolor $\displaystyle#1$};}
+ \makeatother
+  
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem*{remark*}{\textbf{Remark}}
+
+ \newenvironment{proofof}[1]{{\bf {\em Proof of #1.}}}{\hfill \rule{2mm}{2mm} %\qed 
+ }
+ 
+\def\E{\mathbb{E}}
+\def\eps{\epsilon}
+\def\del{\delta}
+\def\cE{\mathcal E}
+
+\def\T{\text{T}}
+\def\out{\text{out}}
+\def\x{\text{x}}
+\def\DD{\text{D}}
+\def\spam{\text{spam}}
+\def\dd{\text{d}}
+\def\MSE{\text{MSE}}
+\def\MMSE{\text{MMSE}}
+\def\IT{\text{IT}}
+\def\alg{\text{alg}}
+\def\sign{\text{sign}}
+\def\PR{\text{PR}}
+\def\extr{{  \textbf{extr}}}
+\def\erf{\text{erf}}
+\def\erfc{\text{erfc}}
+
+\newcommand{\KL}{\textrm{KL}}
+\newcommand{\tramp}{\textsf{tramp}\xspace}
+\newcommand{\lasso}{\textsf{LASSO}\xspace}
+\newcommand{\pymc}{\textsf{PyMC3}\xspace}
+\newcommand{\scikit}{\textsf{Scikit-Learn}\xspace}
+
+% Single braces
+\newcommand{\agbrs}[1]{\left\langle #1 \right\rangle}
+\newcommand{\rdbrs}[1]{\left( #1 \right)}	
+\newcommand{\sqbrs}[1]{\left\lbrack #1 \right\rbrack}
+\newcommand{\clbrs}[1]{\left\lbrace #1 \right\rbrace}
+
+\def\T{\text{T}}
+\def\DD{\text{D}}
+\def\dd{\text{d}}
+\def\MSE{\text{MSE}}
+\def\MMSE{\text{MMSE}}
+\def\eff{\text{eff}}
+
+\newcommand{\lb}{\llbracket}
+\newcommand{\rb}{\rrbracket}
+\newcommand{\intbracket}[1]{\lb #1 \rb}
+
+%% Scale math
+\newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}

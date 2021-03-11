@@ -1,0 +1,79 @@
+
+\section{Bayesian inference and factor graph}
+
+		Both \textbf{Minimum Mean-Squared Error (MMSE)} and \textbf{Maximum A Posteriori (MAP)} estimations boil down to the analysis of the posterior distribution $\rP\(\mat{W} | \vec{y}, \mat{X}\)$ expressed by the Bayes rule
+			\begin{align}
+				\rP\(\mat{W} | \vec{y}, \mat{X}\)  &= \frac{\bbP\(\vec{y} | \mat{W}, \mat{X} \) \bbP\(\mat{W}\) }{\rP\(\vec{y},\mat{X}\)} = \frac{\rP_{\out} \(\vec{y} | \mat{W}, \mat{X} \) \rP_{\w}\(\mat{W}\)}{\mZ_\ndim\(\{\vec{y}, \mat{X}\} \)}   \,.
+				\label{appendix:replica:committee:bayes_formula}
+			\end{align}
+			The joint distribution is also called the \emph{partition function} $\rP\(\vec{y},\mat{X}\) \equiv \mZ_\ndim\(\{\vec{y}, \mat{X}\} \)$. To connect with the statistical physics formalism, we introduce the corresponding Hamiltonian, for separable distributions $\rP_{\out}, \rP_{\w}$ along one dimension, by
+		\begin{align*}
+			\mH_\ndim\(\mat{W},\{\vec{y},\mat{X}\}\) &=- \log \rP_{\out} \(\vec{y} | \mat{W}, \mat{X} \) -  \log \rP_{\w}\(\mat{W}\)\,,\\
+			&= - \sum_{\mu=1}^\nsamples \log \rP_{\out} \(y_\mu | \mat{W}, \vec{x}_{\mu} \) - \sum_{i=1}^\ndim \rP_{\w}\(\vec{w}_i\)\,.
+		\end{align*}
+		The spin variables represent the weights of the model $\mat{W} \in \bbR^{\ndim \times K}$ and they interact through the random dataset $\{\vec{y}, \mat{X}\}$ that plays the role of the quenched exchange interactions. However here, the interactions are \emph{fully connected}, meaning that each variable $\vec{w}_i \in \bbR^{K}$ is connected to every other spin $\{\vec{w}_j\}_{j \in \partial j \setminus i }$ as represented in the factor graph in \Fig\ref{fig:factor_graph_committee}.
+		
+			\begin{figure}[htb!]
+			\centering
+			\begin{tikzpicture}[scale=0.8, auto, swap]
+			    \foreach \i in {1,...,6}
+			        \node[var] (X\i) at (1.5*\i,0) {};
+			    \node at (11, 0) {$ \vec{w}_i \in \bbR^K $};
+			
+			    \foreach \mu in {1,...,4}
+			        \node[inter] (Y\mu) at (1.5+1.5*\mu,-2) {};
+			    \foreach \i in {1,...,6}
+			        \foreach \mu in {1,...,4}
+			            \path[edge] (X\i) -- (Y\mu);
+			    \node at (10, -2) {};
+			    \node (F) at (11, -2) {$ \rp_{\out}\(y_\mu | \mat{W}, \vec{x}_{\mu} \) $};			
+			    \foreach \i in {1,...,6} {
+			        \node[field] (P\i) at (1.5*\i,1) {};
+			        \path[edge] (X\i) -- (P\i);
+			    }
+			    \node at (11, 1) {$ \rp_\w(\vec{w}_i) $};
+			\end{tikzpicture}
+			\caption{Factor graph corresponding to the committee machines hypothesis class. The vectorial variables to infer $\vec{w}_i$ are fully connected through the quenched disorder $\vec{y} \sim \rP_{\out^\star} (.)$ and each variable follow a one-body interaction with a separable prior distribution $\rp_\w(\vec{w}_i)$.}
+			\label{fig:factor_graph_committee}
+			\end{figure}
+			
+		The partition function at inverse temperature $\beta$ is therefore defined by 
+			\begin{align}
+			\begin{aligned}
+			\mZ_\ndim\(\{\vec{y}, \mat{X}\}; \beta\) &\equiv \rP\(\vec{y},\mat{X}\) = \int_{\bbR^{\ndim\times K}} \d\mat{W} ~ e^{-\beta \mH_\ndim \(\mat{W},\{\vec{y},\mat{X}\}\)}  \\
+			&= \int_{\bbR^{\ndim\times K}} \d\vec{w} ~ e^{\beta\( \log \rp_{\out} \(\vec{y} | \mat{W}, \mat{X} \) + \log P_{\w}\(\mat{W}\) \)}\\
+			&= \int_{\bbR^{\ndim\times K}} \d\vec{w} ~ \rp_{\out} \(\vec{y} | \mat{W}, \mat{X} \) \rp_{\w}\(\mat{W}\)\,,
+			\end{aligned}
+			\end{align}
+			and can be exactly mapped to Bayesian estimation for $\beta=1$. In the context of \aclink{ERM}, \aclink{MAP} estimation can be analyzed  by taking the limit $\beta\to \infty$.\\
+			
+			In the considered modern high-dimensional regime with $\ndim \to \infty$, $\nsamples \to\infty$, $\alpha = \nsamples/\ndim = \Theta(1)$ and $K=\Theta(1)$, we are interested in computing the \emph{free entropy} $\Phi$
+			\emph{averaged} over the input data $\mat{X}$ and teacher weights $\mat{W}^\star$, or equivalently over the output labels $\vec{y}$ generated from it, defined as
+			\begin{align}
+				\Phi(\alpha) \equiv \lim_{\ndim \to \infty}  \frac{1}{\ndim}  \EE_{\vec{y},\mat{X}} \[\log  \mZ_\ndim\(\vec{y}, \mat{X}\) \]\,.
+				\label{free_entropy}
+			\end{align}
+			
+\begin{remark}
+	\begin{itemize}
+		\item The distribution $\rP\(\vec{w} | \vec{y}; \mat{X}\)$ is often intractable in the limit $\ndim \to \infty$
+		\item Moreover it is still hard to sample efficiently in the high-dimensional regime
+	\end{itemize}
+\end{remark}
+
+To circumvent this issue:
+
+\begin{itemize}
+	\item We can focus only on marginals $\rP(\vec{w}_i; \vec{y}, \mat{X})$ which can been estimated with \textbf{Belief Propagation (BP)} equations and \textbf{Approximate Message Passing (AMP) algorithms}, as illustrated in \Sec\ref{sec:bp_amp}.
+	\item We may also try to compute directly the free entropy: we present the replica method in \Sec\ref{sec:replicas} that allows to compute the above average over the random dataset $\{\vec{y}, \mat{X}\}$, that plays the role of the quenched disorder in usual spin glasses. We show the computation for the more involved committee machine model class and generalization of the GLM class, only for \iid data. 
+	\item We try to give an idea how these two methods relate and we show they are complementary and consistent.
+\end{itemize} 
+
+
+\begin{remark}
+	The cumbersome computation for non \iid data can be performed as well and lead to more complex expressions and has been performed in particular in \cite{kabashima2008inference} in the case of the GLM. 
+\end{remark}
+
+
+
+					

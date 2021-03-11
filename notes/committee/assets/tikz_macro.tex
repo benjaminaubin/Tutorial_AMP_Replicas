@@ -1,0 +1,31 @@
+\usetikzlibrary{decorations.text}
+\tikzstyle{var}=[circle, draw, very thick, minimum size=12pt, inner sep=0pt, fill=burntorange, font=\small]
+\tikzstyle{inter}=[rectangle, draw, very thick, minimum size=12pt, inner sep=0pt, fill=teal, font=\small]
+\tikzstyle{field}=[rectangle, draw, very thick, minimum size=12pt, inner sep=0pt, fill=amber, font=\small]
+\tikzstyle{fun}=[rectangle, draw, very thick, minimum size=15pt, inner sep=0pt, fill=teal]
+\tikzstyle{edge} = [draw, thick, -]
+\newcommand{\AxisRotator}[1][rotate=0]{%
+    \tikz [x=0.25cm,y=0.60cm,line width=.2ex,-stealth,#1, dashed] \draw (0,0) arc (-150:150:1 and 1);%
+}
+\newcommand{\arcarrow}[8]{
+  \pgfmathsetmacro{\rin}{#1}
+  \pgfmathsetmacro{\rmid}{#2}
+  \pgfmathsetmacro{\rout}{#3}
+  \pgfmathsetmacro{\astart}{#4}
+  \pgfmathsetmacro{\aend}{#5}
+  \pgfmathsetmacro{\atip}{#6}
+  \fill[#7] (\astart:\rin) arc (\astart:\aend:\rin)
+       -- (\aend+\atip:\rmid) -- (\aend:\rout) arc (\aend:\astart:\rout)
+       -- (\astart+\atip:\rmid) -- cycle;
+  \path[decoration = {text along path, text = {#8},
+    text align = {align = center}, raise = -0.5ex}, decorate]
+    (\astart+\atip:\rmid) arc (\astart+\atip:\aend+\atip:\rmid);
+}
+
+\newcommand\randompath[2]{%
+\pgfmathsetseed{#1}%
+\addplot[#2,domain=0:1,samples=100,smooth] { x+rand*(x)*(1-x)};%
+}
+
+\tikzset{My Arrow Style/.style={single arrow, fill=red!50, anchor=base, align=center,text width=2.8cm}}
+\newcommand{\MyArrow}[4][]{\tikz[baseline] \node [My Arrow Style,#1] {#2};}

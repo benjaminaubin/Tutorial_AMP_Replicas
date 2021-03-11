@@ -1,0 +1,48 @@
+\documentclass[a4paper,11pt]{article}
+\input{assets/choose_colors.tex}
+\input{assets/import_packages.tex}
+\input{assets/settings_custom.tex}
+\input{assets/tikz_macro.tex}
+
+\begin{document}
+
+\title{\huge Tutorial: Approximate Message Passing \& Replicas for committee machines}
+\author{Benjamin Aubin$^\dagger$}
+\date{
+$\dagger$ \textit{Institut de Physique Th\'eorique \\
+CNRS \& CEA \& Universit\'e Paris-Saclay, Saclay, France}\\
+}
+
+\maketitle
+\makeatletter
+\tableofcontents
+\newpage
+
+%% Global notations %%
+\newcommand{\ndim}{d}
+\newcommand{\nsamples}{n}
+\newcommand{\indsamples}{\mu}
+\newcommand{\inddim}{i}
+
+%% Main %%
+\input{files/introduction.tex}
+
+% model
+\input{files/model.tex}
+
+% replicas %
+\newpage
+\input{files/replicas.tex}
+
+% bp and amp %
+\newpage
+\input{files/amp.tex}
+
+%% Biblio %%
+\newpage
+\bibliographystyle{unsrt}
+\bibliography{assets/bibliography.bib}
+
+\end{document}
+
+
